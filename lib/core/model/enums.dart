@@ -1,8 +1,12 @@
+import 'package:json_annotation/json_annotation.dart';
+
 // Wire-level enums shared by every feature. Values match the Prisma enums and
 // the JSON the API emits, so they serialize by name.
 
 enum Role {
+  @JsonValue('ADMIN')
   admin('ADMIN'),
+  @JsonValue('STAFF')
   staff('STAFF');
 
   const Role(this.wire);
@@ -17,8 +21,11 @@ enum Role {
 }
 
 enum PlanTier {
+  @JsonValue('FREE')
   free('FREE'),
+  @JsonValue('PREMIUM')
   premium('PREMIUM'),
+  @JsonValue('CUSTOM')
   custom('CUSTOM');
 
   const PlanTier(this.wire);
@@ -29,8 +36,11 @@ enum PlanTier {
 }
 
 enum EventStatus {
+  @JsonValue('DRAFT')
   draft('DRAFT'),
+  @JsonValue('PUBLISHED')
   published('PUBLISHED'),
+  @JsonValue('CLOSED')
   closed('CLOSED');
 
   const EventStatus(this.wire);
@@ -41,8 +51,11 @@ enum EventStatus {
 }
 
 enum RegistrationStatus {
+  @JsonValue('CONFIRMED')
   confirmed('CONFIRMED'),
+  @JsonValue('WAITLIST')
   waitlist('WAITLIST'),
+  @JsonValue('CANCELLED')
   cancelled('CANCELLED');
 
   const RegistrationStatus(this.wire);

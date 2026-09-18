@@ -50,4 +50,14 @@ abstract final class AppConfig {
   static const String customScheme = 'thingstead';
 
   static const String appName = 'Thingstead';
+
+  /// OAuth client ids for Google sign-in. The Web client id is what the
+  /// backend verifies as the token audience; the iOS id is needed by the SDK.
+  static const String googleWebClientId =
+      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+  static const String googleIosClientId =
+      String.fromEnvironment('GOOGLE_IOS_CLIENT_ID');
+
+  /// Reported in the X-Client header. Keep in step with pubspec.yaml.
+  static const String appVersion = '0.1.0';
 }

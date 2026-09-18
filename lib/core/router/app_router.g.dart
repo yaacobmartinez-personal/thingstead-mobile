@@ -8,29 +8,23 @@ part of 'app_router.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`) plus the
-/// auth stack. Each shell keeps its own tab state via `indexedStack`.
-///
-/// Guards (auth, organizer access, role, feature gates) are added to
-/// [_redirect] in Phase 1; Phase 0 only needs the skeleton to render.
+/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
+/// auth stack, and a few top-level screens. Each shell keeps its own tab
+/// state via `indexedStack`. Redirect rules live in [computeRedirect].
 
 @ProviderFor(appRouter)
 final appRouterProvider = AppRouterProvider._();
 
-/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`) plus the
-/// auth stack. Each shell keeps its own tab state via `indexedStack`.
-///
-/// Guards (auth, organizer access, role, feature gates) are added to
-/// [_redirect] in Phase 1; Phase 0 only needs the skeleton to render.
+/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
+/// auth stack, and a few top-level screens. Each shell keeps its own tab
+/// state via `indexedStack`. Redirect rules live in [computeRedirect].
 
 final class AppRouterProvider
     extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
     with $Provider<GoRouter> {
-  /// Two independent bottom-nav shells (attendee `/a`, organizer `/o`) plus the
-  /// auth stack. Each shell keeps its own tab state via `indexedStack`.
-  ///
-  /// Guards (auth, organizer access, role, feature gates) are added to
-  /// [_redirect] in Phase 1; Phase 0 only needs the skeleton to render.
+  /// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
+  /// auth stack, and a few top-level screens. Each shell keeps its own tab
+  /// state via `indexedStack`. Redirect rules live in [computeRedirect].
   AppRouterProvider._()
     : super(
         from: null,
@@ -64,4 +58,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'158e2f700f6e2873f5a92ed6c00724ec5ce3f839';
+String _$appRouterHash() => r'8f2945a9013156915435f884516b2a4fb2b1b244';

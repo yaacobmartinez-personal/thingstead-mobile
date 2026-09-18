@@ -158,6 +158,15 @@ class FakeStore {
   final events = <FakeEvent>[];
   final registrations = <FakeRegistration>[];
 
+  /// Raw verification token -> user id (single use).
+  final verificationTokens = <String, String>{};
+
+  /// Raw reset token -> (user id, expiry) (single use).
+  final resetTokens = <String, (String, DateTime)>{};
+
+  /// Emails the fake server would have sent, newest last.
+  final outbox = <FakeEmail>[];
+
   int _sequence = 0;
 
   /// Deterministic ids (u_1, ev_12, ...) so tests and fixtures can name them.
@@ -223,3 +232,21 @@ class FakeStore {
   int checkedInCount(String eventId) =>
       registrationsOf(eventId).where((r) => r.checkedInAt != null).length;
 }
+
+/// A message the fake server "sent". Verification and reset tokens surface
+/// here so fake mode can complete flows that need an inbox.
+class FakeEmail {
+  FakeEmail({
+    required this.to,
+    required this.kind,
+    required this.token,
+    required this.sentAt,
+  });
+
+  final String to;
+  final FakeEmailKind kind;
+  final String token;
+  final DateTime sentAt;
+}
+
+enum FakeEmailKind { verify, reset, invite, registration }

@@ -32,5 +32,6 @@ abstract final class Routes {
   static String orgEventEdit(String slug) => '/o/events/$slug/edit';
   static String orgEventAttendees(String slug) => '/o/events/$slug/attendees';
   static const orgSyncAttention = '/o/sync/attention';
-  static const orgSettingsServer = '/o/settings/server';
+  /// Outside both shells so it is reachable from the login screen.
+  static const serverAddress = '/settings/server';
 }

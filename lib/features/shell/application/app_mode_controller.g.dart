@@ -41,7 +41,7 @@ final class AppModeControllerProvider
   }
 }
 
-String _$appModeControllerHash() => r'1e05734e71999eac8d0d5ed7a9d80ca5417d602b';
+String _$appModeControllerHash() => r'41768b85f1f36ad513d83ff05cf0041bd5b25d46';
 
 abstract class _$AppModeController extends $Notifier<AppMode> {
   AppMode build();

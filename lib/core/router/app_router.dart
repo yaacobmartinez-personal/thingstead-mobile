@@ -2,34 +2,82 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/attendee/account/presentation/account_screen.dart';
+import '../../features/auth/application/auth_controller.dart';
+import '../../features/auth/presentation/check_email_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
+import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/auth/presentation/verify_screen.dart';
+import '../../features/organizer/settings/presentation/server_address_screen.dart';
+import '../../features/organizer/settings/presentation/settings_screen.dart';
 import '../../features/shell/application/app_mode_controller.dart';
 import '../../features/shell/presentation/attendee_shell.dart';
-import '../../features/shell/presentation/mode_switch_tile.dart';
 import '../../features/shell/presentation/organizer_shell.dart';
 import '../../features/shell/presentation/placeholder_screen.dart';
+import 'guards.dart';
 import 'router_refresh.dart';
 import 'routes.dart';
 
 part 'app_router.g.dart';
 
-/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`) plus the
-/// auth stack. Each shell keeps its own tab state via `indexedStack`.
-///
-/// Guards (auth, organizer access, role, feature gates) are added to
-/// [_redirect] in Phase 1; Phase 0 only needs the skeleton to render.
+/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
+/// auth stack, and a few top-level screens. Each shell keeps its own tab
+/// state via `indexedStack`. Redirect rules live in [computeRedirect].
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   final refresh = RouterRefresh(ref);
   ref.onDispose(refresh.dispose);
 
-  final initialMode = ref.read(appModeControllerProvider);
+  final auth = ref.read(authControllerProvider);
+  final mode = ref.read(appModeControllerProvider);
+  final initial = auth.isSignedIn ? mode.home : AppMode.attendee.home;
 
   return GoRouter(
-    initialLocation: initialMode.home,
+    initialLocation: initial,
     refreshListenable: refresh,
     debugLogDiagnostics: false,
-    redirect: (context, state) => _redirect(ref, state),
+    redirect: (context, state) => computeRedirect(
+      uri: state.uri,
+      auth: ref.read(authControllerProvider),
+      mode: ref.read(appModeControllerProvider),
+    ),
     routes: [
+      // ---- auth stack -------------------------------------------------------
+      GoRoute(
+        path: Routes.login,
+        builder: (context, state) =>
+            LoginScreen(from: state.uri.queryParameters['from']),
+      ),
+      GoRoute(
+        path: Routes.signup,
+        builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: Routes.checkEmail,
+        builder: (context, state) =>
+            CheckEmailScreen(email: state.uri.queryParameters['email']),
+      ),
+      GoRoute(
+        path: Routes.verify,
+        builder: (context, state) =>
+            VerifyScreen(token: state.uri.queryParameters['token']),
+      ),
+      GoRoute(
+        path: Routes.forgot,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.reset,
+        builder: (context, state) =>
+            ResetPasswordScreen(token: state.uri.queryParameters['token']),
+      ),
+      GoRoute(
+        path: Routes.serverAddress,
+        builder: (context, state) => const ServerAddressScreen(),
+      ),
+
       // ---- attendee shell ---------------------------------------------------
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -63,12 +111,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.attendeeAccount,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Account',
-                  phase: 'Phase 1',
-                  icon: Icons.person_outline,
-                  trailing: ModeSwitchTile(target: AppMode.organizer),
-                ),
+                builder: (context, state) => const AccountScreen(),
               ),
             ],
           ),
@@ -120,12 +163,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.orgSettings,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Settings',
-                  phase: 'Phase 1',
-                  icon: Icons.settings_outlined,
-                  trailing: ModeSwitchTile(target: AppMode.attendee),
-                ),
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),
@@ -133,11 +171,4 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
-}
-
-String? _redirect(Ref ref, GoRouterState state) {
-  // Phase 1 adds: booting -> splash, auth-required routes -> login, organizer
-  // routes without access -> attendee home, org selection, role and feature
-  // gates. Nothing to enforce yet.
-  return null;
 }
