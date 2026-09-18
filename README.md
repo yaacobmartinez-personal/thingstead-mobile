@@ -34,6 +34,7 @@ flutter test
 ## Docs
 
 - [docs/PLAN.md](docs/PLAN.md) — the approved implementation plan and phases
+- [docs/REDESIGN.md](docs/REDESIGN.md) — the visual redesign plan (Phase D: green palette, illustrations, motion, dark mode)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — modes, layers, `API_MODE`
 - [docs/API-CONTRACT.md](docs/API-CONTRACT.md) — backend contract
 
