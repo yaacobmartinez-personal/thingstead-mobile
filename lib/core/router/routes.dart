@@ -15,9 +15,11 @@ abstract final class Routes {
   static const attendeeEvents = '/a/events';
   static const attendeeTickets = '/a/tickets';
   static const attendeeAccount = '/a/account';
-  static String attendeeOrg(String org) => '/a/orgs/$org';
+  /// Public org pages nest under the Events tab so a declarative `go` (deep
+  /// links, the post-login return) builds the full back stack.
+  static String attendeeOrg(String org) => '$attendeeEvents/orgs/$org';
   static String attendeeEvent(String org, String event) =>
-      '/a/orgs/$org/events/$event';
+      '$attendeeEvents/orgs/$org/events/$event';
   static String ticket(String id) => '/a/tickets/$id';
   static const ticketImport = '/a/tickets/import';
 

@@ -101,3 +101,28 @@ until API-CONTRACT #18–#32 ship (`Feature.eventCrud`, `promoteErase`,
 Riverpod's retry policy (`lib/core/network/retry_policy.dart`) only retries
 transport failures, on the root scope and on every test container, so a 403
 or 404 rejects a provider's `.future` immediately.
+
+## Attendee mode and deep links (Phase 5)
+
+Everything attendee-side is behind `Feature.attendeeMode` (API-CONTRACT
+#10–#17) and fake-backed until the server ships it.
+
+- `attendee/orgs` — public org page and event page (`PublicEventsRepository`),
+  `RecentOrgs` (prefs-persisted shortcuts; there is no directory), the Find
+  tab (code field + link scanner), and `PublicEventScreen` with the Register
+  CTA. Registering is login-gated at the button, not the route, so shared
+  links open instantly.
+- `attendee/registration` — `RegisterController` ports the web `register`
+  action's outcomes (confirmed / waitlisted / full / duplicate / closed) and
+  invalidates the public event and the ticket list.
+- `attendee/tickets` — `TicketsController` (upcoming/past split, rebuilt on
+  account change), `TicketActions` (import from a manage link with the
+  email-mismatch rule, cancel with no waitlist promotion), and the ticket
+  screen whose QR encodes `APP_ORIGIN/checkin?c=<token>` — the same URL the
+  web ticket carries, so the organizer scanner reads it unchanged.
+- Deep links: `app_links` → `DeepLinkParser` (pure) → `actionFor` (pure
+  routing table, `lib/core/router/deep_link_handler.dart`) → `go`. Public
+  pages nest under `/a/events` and ticket pages under `/a/tickets`, so a
+  declarative `go` builds the full back stack. Flutter's built-in deep
+  linking is disabled on both platforms. Cold-start links wait for the boot
+  session check so organizer-only links (check-in) route correctly.

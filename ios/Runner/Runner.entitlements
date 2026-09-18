@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Universal Links. Needs /.well-known/apple-app-site-association on both
+	     hosts (docs/API-CONTRACT.md) and the Associated Domains capability on
+	     the App ID. Attach this file to the Runner target in Xcode
+	     (Signing & Capabilities) when building on the Mac. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:thingstead.pro</string>
+		<string>applinks:www.thingstead.pro</string>
+		<string>applinks:app.thingstead.pro</string>
+	</array>
+</dict>
+</plist>

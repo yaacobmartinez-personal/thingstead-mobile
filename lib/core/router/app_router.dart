@@ -3,6 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/attendee/account/presentation/account_screen.dart';
+import '../../features/attendee/orgs/presentation/find_events_screen.dart';
+import '../../features/attendee/orgs/presentation/org_events_screen.dart';
+import '../../features/attendee/orgs/presentation/public_event_screen.dart';
+import '../../features/attendee/tickets/presentation/import_ticket_screen.dart';
+import '../../features/attendee/tickets/presentation/ticket_detail_screen.dart';
+import '../../features/attendee/tickets/presentation/tickets_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/check_email_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
@@ -24,7 +30,6 @@ import '../../features/organizer/team/presentation/team_screen.dart';
 import '../../features/shell/application/app_mode_controller.dart';
 import '../../features/shell/presentation/attendee_shell.dart';
 import '../../features/shell/presentation/organizer_shell.dart';
-import '../../features/shell/presentation/placeholder_screen.dart';
 import 'guards.dart';
 import 'router_refresh.dart';
 import 'routes.dart';
@@ -102,11 +107,25 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.attendeeEvents,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Find events',
-                  phase: 'Phase 5',
-                  icon: Icons.search,
-                ),
+                builder: (context, state) => const FindEventsScreen(),
+                routes: [
+                  // Public org pages nest here so `go` builds Find → org →
+                  // event and the back button always has somewhere to go.
+                  GoRoute(
+                    path: 'orgs/:org',
+                    builder: (context, state) =>
+                        OrgEventsScreen(orgSlug: state.pathParameters['org']!),
+                    routes: [
+                      GoRoute(
+                        path: 'events/:event',
+                        builder: (context, state) => PublicEventScreen(
+                          orgSlug: state.pathParameters['org']!,
+                          eventSlug: state.pathParameters['event']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -114,11 +133,20 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.attendeeTickets,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'My tickets',
-                  phase: 'Phase 5',
-                  icon: Icons.confirmation_number_outlined,
-                ),
+                builder: (context, state) => const TicketsScreen(),
+                routes: [
+                  // Literal before the parameter so "import" is never an id.
+                  GoRoute(
+                    path: 'import',
+                    builder: (context, state) =>
+                        ImportTicketScreen(token: state.uri.queryParameters['token']),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        TicketDetailScreen(ticketId: state.pathParameters['id']!),
+                  ),
+                ],
               ),
             ],
           ),

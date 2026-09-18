@@ -29,6 +29,43 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Links are handled by app_links + DeepLinkHandler, not by
+                 Flutter's built-in deep linking (which would feed the web
+                 path straight into the router). -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
+
+            <!-- Public pages: thingstead.pro/<org> and /<org>/<event>.
+                 autoVerify needs /.well-known/assetlinks.json on the host
+                 (see docs/API-CONTRACT.md); until then Android shows a
+                 chooser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="thingstead.pro" />
+                <data android:scheme="https" android:host="www.thingstead.pro" />
+            </intent-filter>
+
+            <!-- Dashboard host: only the paths the app has screens for. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="app.thingstead.pro" />
+                <data android:pathPrefix="/checkin" />
+                <data android:pathPrefix="/verify" />
+                <data android:pathPrefix="/reset" />
+                <data android:pathPrefix="/invite" />
+            </intent-filter>
+
+            <!-- Custom scheme fallback (thingstead://thingstead.pro/acme). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="thingstead" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
