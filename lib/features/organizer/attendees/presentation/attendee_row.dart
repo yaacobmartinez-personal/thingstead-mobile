@@ -16,6 +16,7 @@ class AttendeeRow extends StatelessWidget {
     required this.busy,
     required this.onToggle,
     this.zone,
+    this.onTap,
     this.onLongPress,
     this.pending = false,
   });
@@ -24,6 +25,7 @@ class AttendeeRow extends StatelessWidget {
   final bool busy;
   final VoidCallback onToggle;
   final String? zone;
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   /// A queued check-in is waiting to sync for this row.
@@ -39,6 +41,7 @@ class AttendeeRow extends StatelessWidget {
     };
 
     return ListTile(
+      onTap: onTap,
       onLongPress: onLongPress,
       title: Text(
         a.displayName,

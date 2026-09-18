@@ -15,6 +15,9 @@ import 'checkin/domain/checkin_repository.dart';
 import 'events/data/fake_org_events_repository.dart';
 import 'events/data/real_org_events_repository.dart';
 import 'events/domain/org_events_repository.dart';
+import 'team/data/fake_team_repository.dart';
+import 'team/data/real_team_repository.dart';
+import 'team/domain/team_repository.dart';
 
 part 'organizer_providers.g.dart';
 
@@ -27,6 +30,7 @@ OrgEventsRepository orgEventsRepository(Ref ref) => switch (ref.watch(apiModePro
           ref.watch(fakeStoreProvider),
           ref.watch(fakeLatencyProvider),
           () => ref.read(currentUserIdProvider),
+          clock: ref.watch(clockProvider),
           offline: () => !ref.read(isOnlineProvider),
         ),
     };
@@ -38,6 +42,7 @@ AttendeesRepository attendeesRepository(Ref ref) => switch (ref.watch(apiModePro
           ref.watch(fakeStoreProvider),
           ref.watch(fakeLatencyProvider),
           () => ref.read(currentUserIdProvider),
+          clock: ref.watch(clockProvider),
           offline: () => !ref.read(isOnlineProvider),
         ),
     };
@@ -50,6 +55,18 @@ CheckinRepository checkinRepository(Ref ref) => switch (ref.watch(apiModeProvide
           ref.watch(fakeLatencyProvider),
           ref.watch(clockProvider),
           () => ref.read(currentUserIdProvider),
+          offline: () => !ref.read(isOnlineProvider),
+        ),
+    };
+
+@Riverpod(keepAlive: true)
+TeamRepository teamRepository(Ref ref) => switch (ref.watch(apiModeProvider)) {
+      ApiMode.real => RealTeamRepository(ref.watch(apiClientProvider)),
+      ApiMode.fake => FakeTeamRepository(
+          ref.watch(fakeStoreProvider),
+          ref.watch(fakeLatencyProvider),
+          () => ref.read(currentUserIdProvider),
+          clock: ref.watch(clockProvider),
           offline: () => !ref.read(isOnlineProvider),
         ),
     };

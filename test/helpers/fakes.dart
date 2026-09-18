@@ -11,6 +11,7 @@ import 'package:thingstead/core/fake/fake_latency.dart';
 import 'package:thingstead/core/fake/fake_providers.dart';
 import 'package:thingstead/core/fake/fake_store.dart';
 import 'package:thingstead/core/fake/seed.dart';
+import 'package:thingstead/core/network/retry_policy.dart';
 import 'package:thingstead/core/storage/boot_data.dart';
 import 'package:thingstead/core/storage/db/app_database.dart';
 import 'package:thingstead/core/storage/prefs.dart';
@@ -116,7 +117,7 @@ class TestWorld {
   }
 
   ProviderContainer container() {
-    final c = ProviderContainer(overrides: overrides);
+    final c = ProviderContainer(overrides: overrides, retry: appRetryPolicy);
     addTearDown(() async {
       c.dispose();
       await connectivity.close();

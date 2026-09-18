@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_router.dart';
+part of 'csv_sharer.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,43 @@ part of 'app_router.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(appRouter)
-final appRouterProvider = AppRouterProvider._();
+@ProviderFor(csvSharer)
+final csvSharerProvider = CsvSharerProvider._();
 
-final class AppRouterProvider
-    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
-    with $Provider<GoRouter> {
-  AppRouterProvider._()
+final class CsvSharerProvider
+    extends $FunctionalProvider<CsvSharer, CsvSharer, CsvSharer>
+    with $Provider<CsvSharer> {
+  CsvSharerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'appRouterProvider',
+        name: r'csvSharerProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$appRouterHash();
+  String debugGetCreateSourceHash() => _$csvSharerHash();
 
   @$internal
   @override
-  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<CsvSharer> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  GoRouter create(Ref ref) {
-    return appRouter(ref);
+  CsvSharer create(Ref ref) {
+    return csvSharer(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GoRouter value) {
+  Override overrideWithValue(CsvSharer value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<GoRouter>(value),
+      providerOverride: $SyncValueProvider<CsvSharer>(value),
     );
   }
 }
 
-String _$appRouterHash() => r'd21195299ac6d91df08213b7f058f1ab2ca6c23b';
+String _$csvSharerHash() => r'b66796093a0d8f36b9f5ae4d16f3e7e744ad3036';

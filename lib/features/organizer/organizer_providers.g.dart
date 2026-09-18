@@ -59,7 +59,7 @@ final class OrgEventsRepositoryProvider
 }
 
 String _$orgEventsRepositoryHash() =>
-    r'1660ce312b5bae457d409bb61201e636458353c6';
+    r'8929c46f98ecf0f47f9900bf108901bffb035a80';
 
 @ProviderFor(attendeesRepository)
 final attendeesRepositoryProvider = AttendeesRepositoryProvider._();
@@ -107,7 +107,7 @@ final class AttendeesRepositoryProvider
 }
 
 String _$attendeesRepositoryHash() =>
-    r'bb46054e214ed1e50d75c5e38a1ff3180e649853';
+    r'2fbf7b7a449b6b7f1613134bd61c3afacf232dbf';
 
 @ProviderFor(checkinRepository)
 final checkinRepositoryProvider = CheckinRepositoryProvider._();
@@ -154,4 +154,45 @@ final class CheckinRepositoryProvider
   }
 }
 
-String _$checkinRepositoryHash() => r'9b8eb33b2a3a0097066db363fef83aed9a594866';
+String _$checkinRepositoryHash() => r'9037879dcba254ffef84acc5937a5db89e09fa4c';
+
+@ProviderFor(teamRepository)
+final teamRepositoryProvider = TeamRepositoryProvider._();
+
+final class TeamRepositoryProvider
+    extends $FunctionalProvider<TeamRepository, TeamRepository, TeamRepository>
+    with $Provider<TeamRepository> {
+  TeamRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'teamRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$teamRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<TeamRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TeamRepository create(Ref ref) {
+    return teamRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TeamRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TeamRepository>(value),
+    );
+  }
+}
+
+String _$teamRepositoryHash() => r'2fe5f98b3c8b0910da00e58b4c58d19f91612683';

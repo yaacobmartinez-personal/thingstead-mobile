@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 
 import 'app.dart';
-import 'core/network/api_error.dart';
+import 'core/network/retry_policy.dart';
 import 'core/storage/boot_data.dart';
 import 'core/storage/prefs.dart';
 import 'core/storage/secure_store.dart';
@@ -14,7 +14,7 @@ Future<void> main() async {
   final boot = await _bootstrap();
   runApp(
     ProviderScope(
-      retry: _retryPolicy,
+      retry: appRetryPolicy,
       overrides: [bootDataProvider.overrideWithValue(boot)],
       child: const ThingsteadApp(),
     ),
@@ -41,11 +41,3 @@ Future<BootData> _bootstrap() async {
   }
 }
 
-/// Riverpod 3 retries failed providers with backoff by default. Only transport
-/// failures deserve a retry; a 401/403/404 would just hammer the server.
-Duration? _retryPolicy(int retryCount, Object error) {
-  if (error is ApiError && error.isNetwork && retryCount < 3) {
-    return Duration(seconds: 2 << retryCount);
-  }
-  return null;
-}

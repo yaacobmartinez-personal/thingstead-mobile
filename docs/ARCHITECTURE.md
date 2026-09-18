@@ -77,3 +77,27 @@ offline, so airplane mode demos the whole path without a server.
 All instants are UTC. Rendering uses the event's IANA zone via
 `lib/core/time/app_time.dart`, which ports `regista/lib/time.ts` (including the
 DST-gap check for the event form).
+
+## Organizer management (Phase 4)
+
+Event CRUD, attendee promote/erase/export, and team management are fake-backed
+until API-CONTRACT #18–#32 ship (`Feature.eventCrud`, `promoteErase`,
+`csvExport`, `team`). The pieces:
+
+- `events/domain/event_input.dart` — the form payload with the server's
+  validation (`eventInputSchema` port, incl. the DST-gap check), so the same
+  messages appear whether the check ran locally or on the server.
+- `events/application/event_detail_controller.dart` — `eventDetailProvider`
+  plus `EventActions` (create/update/setStatus/delete). Mutations invalidate
+  the list and detail providers; screens refetch on return.
+- `attendees/application/attendee_actions.dart` — promote/erase refetch the
+  cached list (the screen renders from the cache); `export` writes the CSV to
+  the temp dir and opens the share sheet through `CsvSharer`, which tests
+  replace.
+- `team/application/team_controller.dart` — `TeamController(org)` reloads
+  after every action. The last-admin rule is enforced by the server (fake:
+  409 `last_admin`) and mirrored in the UI via `TeamPage.canReduceAdmin`.
+
+Riverpod's retry policy (`lib/core/network/retry_policy.dart`) only retries
+transport failures, on the root scope and on every test container, so a 403
+or 404 rejects a provider's `.future` immediately.

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/api_mode.dart';
+import '../../../../core/config/feature_availability.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/spacing.dart';
@@ -32,11 +34,19 @@ class EventsScreen extends ConsumerWidget {
     }
 
     final events = ref.watch(orgEventsProvider(org.slug));
+    final canCreate = isAvailable(Feature.eventCrud, ref.watch(apiModeProvider));
     return Scaffold(
       appBar: AppBar(
         title: Text(org.name),
         actions: const [OrgSwitcherButton()],
       ),
+      floatingActionButton: canCreate
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push(Routes.orgEventNew),
+              icon: const Icon(Icons.add),
+              label: const Text('New event'),
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(orgEventsProvider(org.slug).future),
         child: AsyncView(
@@ -45,18 +55,20 @@ class EventsScreen extends ConsumerWidget {
           data: (page) {
             if (page.events.isEmpty) {
               return ListView(
-                children: const [
-                  SizedBox(height: Spacing.x10),
+                children: [
+                  const SizedBox(height: Spacing.x10),
                   EmptyState(
                     icon: Icons.event_busy_outlined,
                     title: 'No events yet',
-                    hint: 'Events created on the web will appear here.',
+                    hint: canCreate
+                        ? 'Tap "New event" to create your first one.'
+                        : 'Events created on the web will appear here.',
                   ),
                 ],
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.all(Spacing.x4),
+              padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x4, Spacing.x4, 96),
               itemCount: page.events.length + (page.stale ? 1 : 0),
               separatorBuilder: (_, _) => const SizedBox(height: Spacing.x3),
               itemBuilder: (context, i) {
@@ -64,7 +76,7 @@ class EventsScreen extends ConsumerWidget {
                 final e = page.events[i - (page.stale ? 1 : 0)];
                 return EventCard(
                   event: e,
-                  onTap: () => context.push(Routes.orgEventAttendees(e.slug)),
+                  onTap: () => context.push(Routes.orgEvent(e.slug)),
                   onScan: () => context.push('${Routes.orgScanLive}?event=${Uri.encodeComponent(e.slug)}'),
                 );
               },

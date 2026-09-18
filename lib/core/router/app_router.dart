@@ -12,12 +12,15 @@ import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/verify_screen.dart';
 import '../../features/organizer/attendees/presentation/attendees_screen.dart';
 import '../../features/organizer/checkin/presentation/needs_attention_screen.dart';
+import '../../features/organizer/events/presentation/event_detail_screen.dart';
+import '../../features/organizer/events/presentation/event_form_screen.dart';
 import '../../features/organizer/events/presentation/events_screen.dart';
 import '../../features/organizer/orgs/presentation/org_picker_screen.dart';
 import '../../features/organizer/scanner/presentation/scan_entry_screen.dart';
 import '../../features/organizer/scanner/presentation/scanner_screen.dart';
 import '../../features/organizer/settings/presentation/server_address_screen.dart';
 import '../../features/organizer/settings/presentation/settings_screen.dart';
+import '../../features/organizer/team/presentation/team_screen.dart';
 import '../../features/shell/application/app_mode_controller.dart';
 import '../../features/shell/presentation/attendee_shell.dart';
 import '../../features/shell/presentation/organizer_shell.dart';
@@ -150,10 +153,28 @@ GoRouter appRouter(Ref ref) {
                 path: Routes.orgEvents,
                 builder: (context, state) => const EventsScreen(),
                 routes: [
+                  // Literal segments before the `:event` parameter so "new"
+                  // is never read as a slug.
                   GoRoute(
-                    path: ':event/attendees',
+                    path: 'new',
+                    builder: (context, state) => const EventFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':event',
                     builder: (context, state) =>
-                        AttendeesScreen(eventSlug: state.pathParameters['event']!),
+                        EventDetailScreen(eventSlug: state.pathParameters['event']!),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        builder: (context, state) =>
+                            EventFormScreen(eventSlug: state.pathParameters['event']!),
+                      ),
+                      GoRoute(
+                        path: 'attendees',
+                        builder: (context, state) =>
+                            AttendeesScreen(eventSlug: state.pathParameters['event']!),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -181,11 +202,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.orgTeam,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Team',
-                  phase: 'Phase 4',
-                  icon: Icons.group_outlined,
-                ),
+                builder: (context, state) => const TeamScreen(),
               ),
             ],
           ),

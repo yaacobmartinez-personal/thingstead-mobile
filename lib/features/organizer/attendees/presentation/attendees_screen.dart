@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/api_mode.dart';
+import '../../../../core/config/feature_availability.dart';
+import '../../../../core/network/api_error.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/spacing.dart';
@@ -9,12 +12,15 @@ import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../checkin/presentation/sync_badge.dart';
 import '../../orgs/application/selected_org_controller.dart';
+import '../application/attendee_actions.dart';
 import '../application/attendees_controller.dart';
+import 'attendee_actions_sheet.dart';
 import 'attendee_row.dart';
 
 /// Port of the Expo AttendeesScreen: search, list, optimistic check-in
-/// toggle, and a Scan action in the app bar. Search is local over the full
-/// list (the server caps at 500 rows).
+/// toggle, and a Scan action in the app bar, plus the web's per-row actions
+/// (tap a row) and CSV export. Search is local over the full list (the
+/// server caps at 500 rows).
 class AttendeesScreen extends ConsumerStatefulWidget {
   const AttendeesScreen({super.key, required this.eventSlug});
 
@@ -26,6 +32,28 @@ class AttendeesScreen extends ConsumerStatefulWidget {
 
 class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
   final _query = TextEditingController();
+  bool _exporting = false;
+
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _export(String org) async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      await ref.read(attendeeActionsProvider.notifier).export(org, widget.eventSlug);
+    } on ApiError catch (e) {
+      _toast(e.message);
+    } catch (_) {
+      _toast("Couldn't export the list. Try again.");
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -40,6 +68,7 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
     final provider = attendeesControllerProvider(org.slug, widget.eventSlug);
     final state = ref.watch(provider);
     final title = state.value?.list.event.title ?? 'Attendees';
+    final canExport = isAvailable(Feature.csvExport, ref.watch(apiModeProvider));
 
     return Scaffold(
       appBar: AppBar(
@@ -53,6 +82,18 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
             icon: const Icon(Icons.qr_code_scanner, size: 20),
             label: const Text('Scan'),
           ),
+          if (canExport)
+            IconButton(
+              tooltip: 'Export CSV',
+              onPressed: _exporting || !state.hasValue ? null : () => _export(org.slug),
+              icon: _exporting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onNavy),
+                    )
+                  : const Icon(Icons.download_outlined),
+            ),
         ],
       ),
       body: Column(
@@ -146,6 +187,13 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
                         busy: data.busyIds.contains(a.id),
                         pending: data.pendingIds.contains(a.id),
                         zone: data.list.event.timezone,
+                        onTap: () => showAttendeeActions(
+                          context,
+                          ref,
+                          org: org.slug,
+                          event: widget.eventSlug,
+                          attendee: a,
+                        ),
                         onToggle: () async {
                           final error = await ref.read(provider.notifier).toggle(a);
                           if (error != null && context.mounted) {

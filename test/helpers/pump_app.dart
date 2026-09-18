@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thingstead/core/network/retry_policy.dart';
 import 'package:thingstead/core/theme/app_theme.dart';
 
 import 'fakes.dart';
@@ -32,6 +33,7 @@ Future<ProviderContainer> pumpApp(
   );
   final container = ProviderContainer(
     overrides: [...world.overrides, ...extraOverrides],
+    retry: appRetryPolicy,
   );
   addTearDown(() async {
     container.dispose();
