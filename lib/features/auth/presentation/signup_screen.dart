@@ -128,7 +128,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
             const SizedBox(height: Spacing.x2),
             TextButton(
-              onPressed: _busy ? null : () => context.pop(),
+              onPressed: _busy ? null : () => context.pushReplacement(Routes.login),
               child: const Text('Already have an account? Sign in'),
             ),
           ],

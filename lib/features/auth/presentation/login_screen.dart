@@ -177,7 +177,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             if (canSignUp) ...[
               const SizedBox(height: Spacing.x4),
               TextButton(
-                onPressed: _busy ? null : () => context.push(Routes.signup),
+                onPressed: _busy ? null : () => context.pushReplacement(Routes.signup),
                 child: const Text('New here? Create an account'),
               ),
             ],
