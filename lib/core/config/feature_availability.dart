@@ -15,6 +15,9 @@ enum Feature {
   csvExport,
   team,
 
+  /// Creating an organization from the app (#34–#35).
+  createOrg,
+
   /// `checkInToken` on the attendees payload, enabling offline scan resolution.
   offlineTokens,
 }
@@ -30,6 +33,7 @@ const Map<Feature, bool> _shippedOnRealServer = {
   Feature.promoteErase: false,
   Feature.csvExport: false,
   Feature.team: false,
+  Feature.createOrg: false,
   Feature.offlineTokens: false,
 };
 

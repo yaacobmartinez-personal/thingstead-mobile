@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/api_mode.dart';
+import '../../../core/config/feature_availability.dart';
+import '../../../core/router/guards.dart';
+import '../../../core/router/routes.dart';
 import '../../../core/theme/illustrations.dart';
 import '../../../core/theme/motion.dart';
 import '../../../core/theme/palette.dart';
@@ -9,6 +13,7 @@ import '../../../core/theme/spacing.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/ui/pill_button.dart';
 import '../../../core/ui/round_icon_button.dart';
+import '../../auth/application/auth_controller.dart';
 import '../../shell/application/app_mode_controller.dart';
 import '../application/onboarding_controller.dart';
 
@@ -67,6 +72,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     context.go(AppMode.attendee.home);
   }
 
+  /// The organizer path. Signed out, it goes to login with `from=/organize`
+  /// (signup preselects "Organize events" from there); signed in, straight
+  /// to org setup.
+  void _organize() {
+    ref.read(onboardingSeenProvider.notifier).set(true);
+    final signedIn = ref.read(authControllerProvider).isSignedIn;
+    context.go(signedIn ? Routes.organize : loginFor(Uri.parse(Routes.organize)));
+  }
+
   void _next() {
     final index = _page.round();
     if (index >= OnboardingScreen.pages.length - 1) {
@@ -85,6 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final index = _page.round();
     final last = index == pages.length - 1;
     final heroHeight = size.height * 0.58;
+    final canOrganize = isAvailable(Feature.createOrg, ref.watch(apiModeProvider));
 
     return Scaffold(
       backgroundColor: p.sage,
@@ -167,6 +182,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       onPressed: _next,
                       icon: last ? null : Icons.arrow_forward,
                       trailingIcon: true,
+                    ),
+                    // The last page is the organizer one; offer that path.
+                    AnimatedSize(
+                      duration: Motion.base,
+                      curve: Motion.move,
+                      child: last && canOrganize
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: Spacing.x2),
+                              child: PillButton(
+                                label: 'I organize events',
+                                variant: PillVariant.ghost,
+                                onPressed: _organize,
+                              ),
+                            )
+                          : const SizedBox(width: double.infinity),
                     ),
                   ],
                 ),

@@ -26,9 +26,13 @@ import 'timezone_picker.dart';
 /// clock in the chosen zone, and field errors show inline whether they came
 /// from the local check or the server.
 class EventFormScreen extends ConsumerWidget {
-  const EventFormScreen({super.key, this.eventSlug});
+  const EventFormScreen({super.key, this.eventSlug, this.firstEvent = false});
 
   final String? eventSlug;
+
+  /// Step 2 of organizer setup: friendlier copy, "Skip for now" instead of
+  /// Cancel, and success lands on the welcome page rather than the event.
+  final bool firstEvent;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +40,11 @@ class EventFormScreen extends ConsumerWidget {
     if (org == null) return const Scaffold(body: SizedBox.shrink());
     final slug = eventSlug;
     if (slug == null) {
-      return _EventForm(org: org.slug, publicHost: _publicHost(org.slug));
+      return _EventForm(
+        org: org.slug,
+        publicHost: _publicHost(org.slug),
+        firstEvent: firstEvent,
+      );
     }
     final detail = ref.watch(eventDetailProvider(org.slug, slug));
     return AsyncView(
@@ -63,11 +71,13 @@ class _EventForm extends ConsumerStatefulWidget {
     required this.org,
     required this.publicHost,
     this.existing,
+    this.firstEvent = false,
   });
 
   final String org;
   final String publicHost;
   final EventDetail? existing;
+  final bool firstEvent;
 
   @override
   ConsumerState<_EventForm> createState() => _EventFormState();
@@ -170,7 +180,9 @@ class _EventFormState extends ConsumerState<_EventForm> {
             ),
           ),
         );
-      if (existing != null && existing.slug == event.slug) {
+      if (widget.firstEvent) {
+        context.go(Routes.orgWelcome(event.slug));
+      } else if (existing != null && existing.slug == event.slug) {
         context.pop();
       } else {
         // New event, or the address changed: rebuild the stack on the new slug.
@@ -196,7 +208,16 @@ class _EventFormState extends ConsumerState<_EventForm> {
         ? _slug.text
         : slugify(_title.text);
     return Scaffold(
-      appBar: AppBar(title: Text(_isEdit ? 'Edit event' : 'New event')),
+      appBar: AppBar(
+        title: Text(
+          widget.firstEvent
+              ? 'Your first event'
+              : _isEdit
+                  ? 'Edit event'
+                  : 'New event',
+        ),
+        automaticallyImplyLeading: !widget.firstEvent,
+      ),
       body: ListView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(
@@ -206,12 +227,23 @@ class _EventFormState extends ConsumerState<_EventForm> {
           Spacing.x8,
         ),
         children: [
+          if (widget.firstEvent)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Spacing.x4),
+              child: Text(
+                'STEP 2 OF 2',
+                style: AppType.caption.copyWith(color: context.palette.limeDeep),
+              ),
+            ),
           if (!_isEdit)
             Padding(
-              padding: EdgeInsets.only(bottom: Spacing.x4),
+              padding: const EdgeInsets.only(bottom: Spacing.x4),
               child: Text(
-                "Events start as a draft. Publish when you're ready to take "
-                'registrations.',
+                widget.firstEvent
+                    ? 'Just the basics for now — everything can change later. '
+                        'Events start as a draft, so nothing goes live until you publish.'
+                    : "Events start as a draft. Publish when you're ready to take "
+                        'registrations.',
                 style: TextStyle(color: context.palette.muted),
               ),
             ),
@@ -366,8 +398,12 @@ class _EventFormState extends ConsumerState<_EventForm> {
           ),
           const SizedBox(height: Spacing.x2),
           TextButton(
-            onPressed: _busy ? null : () => context.pop(),
-            child: const Text('Cancel'),
+            onPressed: _busy
+                ? null
+                : widget.firstEvent
+                    ? () => context.go(Routes.orgWelcome(null))
+                    : () => context.pop(),
+            child: Text(widget.firstEvent ? 'Skip for now' : 'Cancel'),
           ),
         ],
       ),

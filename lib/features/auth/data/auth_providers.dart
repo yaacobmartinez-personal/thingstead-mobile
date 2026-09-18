@@ -34,6 +34,7 @@ OrgsRepository orgsRepository(Ref ref) => switch (ref.watch(apiModeProvider)) {
           ref.watch(fakeStoreProvider),
           ref.watch(fakeLatencyProvider),
           () => ref.read(currentUserIdProvider),
+          clock: ref.watch(clockProvider),
         ),
     };
 

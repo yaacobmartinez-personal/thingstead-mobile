@@ -78,6 +78,8 @@ class AuthScaffold extends StatelessWidget {
                         const SizedBox(height: Spacing.x3),
                         Text(
                           title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: AppType.display.copyWith(color: Colors.white, fontSize: 30),
                         ),
                         if (subtitle != null)
@@ -85,6 +87,8 @@ class AuthScaffold extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
                               subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: AppType.body.copyWith(color: Colors.white.withValues(alpha: 0.85)),
                             ),
                           ),

@@ -171,3 +171,25 @@ chips and labels ellipsize (`Flexible` text); lazily built list items are
 offstage until revealed, so widget tests use
 `tester.ensureVisible(find.x(skipOffstage: false))` rather than
 `scrollUntilVisible` (whose drags can start on a text field).
+
+## Organizer onboarding
+
+New organizers set up in the app instead of on the web (API-CONTRACT
+#34–#35, `Feature.createOrg`):
+
+- **Intent.** The signup screen asks "I'm here to: Attend / Organize". The
+  choice is persisted (`OrganizeIntent`, a pref) because verification may
+  come back through an emailed link. The router redirect sends a signed-in
+  person with the intent and no membership to `/organize` when they leave
+  the auth stack; the setup screen clears it on arrival.
+- **Entry points.** The intro's last page ("I organize events"), the signup
+  choice, and an Account-tab card for signed-in people without an org.
+  Signed out, the intro link goes to `login?from=/organize`, which
+  preselects "Organize" on signup.
+- **Steps.** `/organize` (`CreateOrgScreen`: name, address with live
+  availability) → `CreateOrg.submit` creates the org, refreshes memberships,
+  selects it and switches to organizer mode → `/o/events/new?first=1` (the
+  normal event form in first-event mode, with "Skip for now") →
+  `/o/welcome?event=` (celebration, the event, what to do next).
+- `/organize` lives outside `/o` because that prefix requires a membership;
+  it requires a session.

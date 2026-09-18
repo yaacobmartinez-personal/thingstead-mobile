@@ -39,6 +39,15 @@ abstract final class Routes {
   static String orgEventEdit(String slug) => '/o/events/$slug/edit';
   static String orgEventAttendees(String slug) => '/o/events/$slug/attendees';
   static const orgSyncAttention = '/o/sync/attention';
+
+  /// Organization setup for a signed-in person without one. Outside `/o`
+  /// because that prefix needs a membership.
+  static const organize = '/organize';
+
+  /// The first event form, and the "you're set up" page it leads to.
+  static const orgFirstEvent = '/o/events/new?first=1';
+  static String orgWelcome(String? eventSlug) =>
+      eventSlug == null ? '/o/welcome' : '/o/welcome?event=$eventSlug';
   /// Outside both shells so it is reachable from the login screen.
   static const serverAddress = '/settings/server';
 }

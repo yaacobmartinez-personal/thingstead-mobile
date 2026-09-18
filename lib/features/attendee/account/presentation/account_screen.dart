@@ -7,6 +7,7 @@ import '../../../../core/theme/spacing.dart';
 import '../../../../core/ui/stagger.dart';
 import '../../../auth/application/auth_controller.dart';
 import '../../../auth/presentation/widgets/session_tiles.dart';
+import '../../../organizer/onboarding/presentation/organize_card.dart';
 import '../../../settings/presentation/appearance_tile.dart';
 import '../../../shell/application/app_mode_controller.dart';
 import '../../../shell/presentation/mode_switch_tile.dart';
@@ -38,7 +39,8 @@ class AccountScreen extends ConsumerWidget {
                 if (auth.hasOrganizerAccess) ...[
                   const SizedBox(height: Spacing.x4),
                   const Card(child: ModeSwitchTile(target: AppMode.organizer)),
-                ],
+                ] else
+                  const OrganizeCard(),
               ],
               const SizedBox(height: Spacing.x4),
               const AppearanceCard(),

@@ -89,7 +89,7 @@ final class OrgsRepositoryProvider
   }
 }
 
-String _$orgsRepositoryHash() => r'0bcd0506d7f4a132b8a438ee7625ed1b3fda0dd4';
+String _$orgsRepositoryHash() => r'e9978b20a343ef843d9ac973db82fce98d6240be';
 
 @ProviderFor(googleSignInService)
 final googleSignInServiceProvider = GoogleSignInServiceProvider._();

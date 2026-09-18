@@ -142,6 +142,15 @@ the app. Item numbers are referenced from `lib/core/config/feature_availability.
 | 32 | `DELETE /mobile/orgs/{slug}/team/members/{membershipId}` | → `{ok: true}` (self = leave) | 404, 409 `{reason: "last_admin"}` | — |
 | 33 | `POST /mobile/invitations/accept` *(optional)* | bearer: `{token}` → `{org: {slug, name, role}}` | 400 invalid, 403 `{reason: "email_mismatch"}` | `redeemInvitation`; lets `app.<root>/invite?token=` open in-app. Until then the app opens the link in the browser. |
 
+### 2.7 Organizer: create an organization — `Feature.createOrg`
+
+The web creates a Tenant at signup (`app/home/signup/actions.tsx`) and keeps it PENDING until the email is verified. The app signs people up as attendees (#1) and lets them set up an organization afterwards, so the caller is already verified and the tenant is ACTIVE at once. Same rules as the web: name 2–60, slug `isUsableSlug` (3–63, lowercase alphanumeric with internal hyphens, not reserved), unique.
+
+| # | Method & path | Request → Response | Errors | Backend follow-up |
+|---|---|---|---|---|
+| 34 | `GET /mobile/orgs/availability?slug=` | bearer → `{slug, available: bool, reason?: "invalid" | "reserved" | "taken"}` | 400 missing slug | `slugAvailability` (`lib/tenant.ts`); trims and lower-cases like the web check. |
+| 35 | `POST /mobile/orgs` | bearer: `{name, slug}` → `201 {org: {slug, name, role: "ADMIN", plan: "FREE"}}` | 400 fieldErrors `{name, slug}` (slug messages match the web: "That address isn't available." / "That address is already taken." / shape hint), 409 `{fieldErrors: {slug}}` when taken in the race | Create `Tenant{status: ACTIVE, plan: FREE}` + `Membership{role: ADMIN}` in one transaction; audit `CREATE_TENANT`. No email. |
+
 ---
 
 ## 3. Deep-link hosting (backend follow-up, no app change)

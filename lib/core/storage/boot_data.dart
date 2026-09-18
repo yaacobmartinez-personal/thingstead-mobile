@@ -20,6 +20,7 @@ class BootData {
     this.selectedOrgSlug,
     this.appearance,
     this.onboardingSeen = false,
+    this.organizeIntent = false,
   });
 
   static const empty = BootData();
@@ -34,6 +35,10 @@ class BootData {
   /// 'system' | 'light' | 'dark'; null = system.
   final String? appearance;
   final bool onboardingSeen;
+
+  /// Set at signup when the person chose "Organize events"; consumed after
+  /// their email is verified to route them into organization setup.
+  final bool organizeIntent;
 
   static Future<BootData> load(SecureStore secure, Prefs prefs) async {
     final token = await secure.read(SecureStore.keyToken);
@@ -68,6 +73,7 @@ class BootData {
       selectedOrgSlug: await prefs.getString(Prefs.keySelectedOrg),
       appearance: await prefs.getString(Prefs.keyAppearance),
       onboardingSeen: (await prefs.getString(Prefs.keyOnboardingSeen)) == 'true',
+      organizeIntent: (await prefs.getString(Prefs.keyOrganizeIntent)) == 'true',
     );
   }
 }

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_error.dart';
+import '../../../core/router/routes.dart';
 import '../../../core/theme/spacing.dart';
+import '../../organizer/onboarding/application/organize_intent.dart';
 import '../../shell/application/app_mode_controller.dart';
 import '../application/auth_controller.dart';
 import 'widgets/auth_scaffold.dart';
@@ -51,7 +53,11 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
     try {
       await ref.read(authControllerProvider.notifier).verifyEmail(token);
       if (!mounted) return;
-      context.go(ref.read(appModeControllerProvider).home);
+      // Someone who signed up to organize goes straight into org setup (the
+      // router's own redirect does the same when it gets there first).
+      final organize = ref.read(organizeIntentProvider) &&
+          !ref.read(authControllerProvider).hasOrganizerAccess;
+      context.go(organize ? Routes.organize : ref.read(appModeControllerProvider).home);
     } on ApiError catch (e) {
       setState(() => _error = e.message);
     } finally {

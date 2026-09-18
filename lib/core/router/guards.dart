@@ -21,6 +21,7 @@ String? computeRedirect({
   required AuthState auth,
   required AppMode mode,
   bool onboardingSeen = true,
+  bool organizeIntent = false,
 }) {
   final path = uri.path;
   final signedIn = auth.isSignedIn;
@@ -34,6 +35,8 @@ String? computeRedirect({
   if (path.startsWith('/auth/')) {
     final tokenScreen = path == Routes.verify || path == Routes.reset;
     if (signedIn && !tokenScreen) {
+      // Signed up to organize: setup comes before anything else.
+      if (organizeIntent && !auth.hasOrganizerAccess) return Routes.organize;
       return afterSignInTarget(from: uri.queryParameters['from'], mode: mode);
     }
     return null;
@@ -58,6 +61,7 @@ bool isOrganizerPath(String path) => path == '/o' || path.startsWith('/o/');
 
 bool requiresSession(String path) =>
     isOrganizerPath(path) ||
+    path == Routes.organize ||
     (path.startsWith('${Routes.attendeeTickets}/') && path != Routes.attendeeTickets);
 
 /// The login route that returns to [uri] afterwards.

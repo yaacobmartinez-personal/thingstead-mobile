@@ -23,6 +23,9 @@ import '../../features/organizer/checkin/presentation/needs_attention_screen.dar
 import '../../features/organizer/events/presentation/event_detail_screen.dart';
 import '../../features/organizer/events/presentation/event_form_screen.dart';
 import '../../features/organizer/events/presentation/events_screen.dart';
+import '../../features/organizer/onboarding/application/organize_intent.dart';
+import '../../features/organizer/onboarding/presentation/create_org_screen.dart';
+import '../../features/organizer/onboarding/presentation/welcome_screen.dart';
 import '../../features/organizer/orgs/presentation/org_picker_screen.dart';
 import '../../features/organizer/scanner/presentation/scan_entry_screen.dart';
 import '../../features/organizer/scanner/presentation/scanner_screen.dart';
@@ -67,6 +70,7 @@ GoRouter appRouter(Ref ref) {
       auth: ref.read(authControllerProvider),
       mode: ref.read(appModeControllerProvider),
       onboardingSeen: ref.read(onboardingSeenProvider),
+      organizeIntent: ref.read(organizeIntentProvider),
     ),
     routes: [
       GoRoute(
@@ -83,7 +87,8 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: Routes.signup,
-        builder: (context, state) => const SignupScreen(),
+        builder: (context, state) =>
+            SignupScreen(organize: state.uri.queryParameters['organize'] == '1'),
       ),
       GoRoute(
         path: Routes.checkEmail,
@@ -183,6 +188,20 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const NeedsAttentionScreen(),
       ),
 
+      // ---- organizer onboarding ---------------------------------------------
+      GoRoute(
+        path: Routes.organize,
+        pageBuilder: (context, state) =>
+            sharedAxisPage(state: state, child: const CreateOrgScreen()),
+      ),
+      GoRoute(
+        path: '/o/welcome',
+        pageBuilder: (context, state) => fadeThroughPage(
+          state: state,
+          child: WelcomeScreen(eventSlug: state.uri.queryParameters['event']),
+        ),
+      ),
+
       // ---- organizer shell --------------------------------------------------
       StatefulShellRoute(
         builder: (context, state, navigationShell) =>
@@ -200,7 +219,9 @@ GoRouter appRouter(Ref ref) {
                   // is never read as a slug.
                   GoRoute(
                     path: 'new',
-                    builder: (context, state) => const EventFormScreen(),
+                    builder: (context, state) => EventFormScreen(
+                      firstEvent: state.uri.queryParameters['first'] == '1',
+                    ),
                   ),
                   GoRoute(
                     path: ':event',
