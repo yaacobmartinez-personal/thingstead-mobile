@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../organizer/checkin/application/sync_controller.dart';
+
 /// Bottom navigation for the organizer side: Events · Scan · Team · Settings.
-class OrganizerShell extends StatelessWidget {
+class OrganizerShell extends ConsumerWidget {
   const OrganizerShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Keep the sync worker alive while the organizer side is open so queued
+    // check-ins drain in the background.
+    ref.watch(syncControllerProvider);
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(

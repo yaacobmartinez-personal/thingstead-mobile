@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -56,10 +57,11 @@ class EventsScreen extends ConsumerWidget {
             }
             return ListView.separated(
               padding: const EdgeInsets.all(Spacing.x4),
-              itemCount: page.events.length,
+              itemCount: page.events.length + (page.stale ? 1 : 0),
               separatorBuilder: (_, _) => const SizedBox(height: Spacing.x3),
               itemBuilder: (context, i) {
-                final e = page.events[i];
+                if (page.stale && i == 0) return const _StaleBanner();
+                final e = page.events[i - (page.stale ? 1 : 0)];
                 return EventCard(
                   event: e,
                   onTap: () => context.push(Routes.orgEventAttendees(e.slug)),
@@ -73,3 +75,30 @@ class EventsScreen extends ConsumerWidget {
     );
   }
 }
+class _StaleBanner extends StatelessWidget {
+  const _StaleBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.x3, vertical: Spacing.x2),
+      decoration: BoxDecoration(
+        color: AppColors.warnBg,
+        borderRadius: BorderRadius.circular(Radii.sm),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.cloud_off_outlined, size: 16, color: AppColors.warn),
+          SizedBox(width: Spacing.x2),
+          Expanded(
+            child: Text(
+              'Offline: showing saved events. Pull down to retry.',
+              style: TextStyle(color: AppColors.warn, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

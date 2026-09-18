@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/config/api_mode.dart';
 import '../../core/config/app_config.dart';
+import '../../core/connectivity/connectivity_provider.dart';
 import '../../core/fake/fake_providers.dart';
 import '../../core/network/api_client.dart';
 import '../../core/time/clock.dart';
@@ -26,6 +27,7 @@ OrgEventsRepository orgEventsRepository(Ref ref) => switch (ref.watch(apiModePro
           ref.watch(fakeStoreProvider),
           ref.watch(fakeLatencyProvider),
           () => ref.read(currentUserIdProvider),
+          offline: () => !ref.read(isOnlineProvider),
         ),
     };
 
@@ -36,6 +38,7 @@ AttendeesRepository attendeesRepository(Ref ref) => switch (ref.watch(apiModePro
           ref.watch(fakeStoreProvider),
           ref.watch(fakeLatencyProvider),
           () => ref.read(currentUserIdProvider),
+          offline: () => !ref.read(isOnlineProvider),
         ),
     };
 
@@ -47,5 +50,6 @@ CheckinRepository checkinRepository(Ref ref) => switch (ref.watch(apiModeProvide
           ref.watch(fakeLatencyProvider),
           ref.watch(clockProvider),
           () => ref.read(currentUserIdProvider),
+          offline: () => !ref.read(isOnlineProvider),
         ),
     };

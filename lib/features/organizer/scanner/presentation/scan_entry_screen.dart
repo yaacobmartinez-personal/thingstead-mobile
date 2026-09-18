@@ -9,6 +9,7 @@ import '../../../../core/theme/spacing.dart';
 import '../../../../core/time/app_time.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../checkin/presentation/sync_badge.dart';
 import '../../events/application/events_controller.dart';
 import '../../orgs/application/selected_org_controller.dart';
 
@@ -29,7 +30,15 @@ class ScanEntryScreen extends ConsumerWidget {
     final events = ref.watch(orgEventsProvider(org.slug));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan check-in')),
+      appBar: AppBar(
+        title: const Text('Scan check-in'),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: Spacing.x3),
+            child: Center(child: SyncBadge(onDark: true)),
+          ),
+        ],
+      ),
       body: AsyncView(
         value: events,
         onRetry: () => ref.invalidate(orgEventsProvider(org.slug)),

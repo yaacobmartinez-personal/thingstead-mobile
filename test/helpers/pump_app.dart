@@ -33,7 +33,11 @@ Future<ProviderContainer> pumpApp(
   final container = ProviderContainer(
     overrides: [...world.overrides, ...extraOverrides],
   );
-  addTearDown(container.dispose);
+  addTearDown(() async {
+    container.dispose();
+    await world.connectivity.close();
+    await world.db.close();
+  });
   if (setup != null) await setup(container);
   await tester.pumpWidget(
     UncontrolledProviderScope(

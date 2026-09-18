@@ -1,18 +1,25 @@
 import '../../../../core/fake/fake_latency.dart';
 import '../../../../core/fake/fake_membership.dart';
 import '../../../../core/fake/fake_store.dart';
+import '../../../../core/network/api_error.dart';
 import '../domain/event_summary.dart';
 import '../domain/org_events_repository.dart';
 
 class FakeOrgEventsRepository implements OrgEventsRepository {
-  FakeOrgEventsRepository(this._store, this._latency, this._currentUserId);
+  FakeOrgEventsRepository(this._store, this._latency, this._currentUserId, {bool Function()? offline})
+      : _offline = offline ?? (() => false);
 
   final FakeStore _store;
+
+  /// Fake mode has no network; this lets airplane mode still "unplug" the
+  /// server so the offline paths can be demoed.
+  final bool Function() _offline;
   final FakeLatency _latency;
   final String? Function() _currentUserId;
 
   @override
   Future<EventsPage> list(String orgSlug) async {
+    if (_offline()) throw ApiError.network();
     await _latency.wait();
     final ctx = requireMembership(_store, _currentUserId(), orgSlug);
     final events = _store.eventsOf(ctx.tenant.id).toList()

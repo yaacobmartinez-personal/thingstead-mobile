@@ -3,13 +3,4 @@
          running application to allow setting breakpoints, to provide hot
          reload, etc. -->
     <uses-permission android:name="android.permission.INTERNET"/>
-
-    <!-- Debug builds run on the emulator, where Impeller's OpenGL ES backend
-         freezes the engine when the keyboard hides over a live camera texture
-         (mobile_scanner). Release builds keep Impeller (Vulkan on devices). -->
-    <application>
-        <meta-data
-            android:name="io.flutter.embedding.android.EnableImpeller"
-            android:value="false" />
-    </application>
 </manifest>

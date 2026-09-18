@@ -38,6 +38,10 @@ abstract class EventsPage with _$EventsPage {
   const factory EventsPage({
     required OrgRef org,
     @Default(<EventSummary>[]) List<EventSummary> events,
+
+    /// True when served from the local cache because the server was
+    /// unreachable. Never comes from JSON.
+    @Default(false) @JsonKey(includeFromJson: false, includeToJson: false) bool stale,
   }) = _EventsPage;
 
   factory EventsPage.fromJson(Map<String, dynamic> json) =>

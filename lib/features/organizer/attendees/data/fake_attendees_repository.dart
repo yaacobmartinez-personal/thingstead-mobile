@@ -6,9 +6,14 @@ import '../domain/attendee.dart';
 import '../domain/attendees_repository.dart';
 
 class FakeAttendeesRepository implements AttendeesRepository {
-  FakeAttendeesRepository(this._store, this._latency, this._currentUserId);
+  FakeAttendeesRepository(this._store, this._latency, this._currentUserId, {bool Function()? offline})
+      : _offline = offline ?? (() => false);
 
   final FakeStore _store;
+
+  /// Fake mode has no network; this lets airplane mode still "unplug" the
+  /// server so the offline paths can be demoed.
+  final bool Function() _offline;
   final FakeLatency _latency;
   final String? Function() _currentUserId;
 
@@ -16,6 +21,7 @@ class FakeAttendeesRepository implements AttendeesRepository {
 
   @override
   Future<AttendeeList> list(String orgSlug, String eventSlug, {String query = ''}) async {
+    if (_offline()) throw ApiError.network();
     await _latency.wait();
     final ctx = requireMembership(_store, _currentUserId(), orgSlug);
     final event = _store.eventBySlug(ctx.tenant.id, eventSlug);

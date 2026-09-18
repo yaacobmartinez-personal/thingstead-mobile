@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:thingstead/core/fake/fake_latency.dart';
 import 'package:thingstead/core/fake/seed.dart';
 import 'package:thingstead/core/model/enums.dart';
 import 'package:thingstead/core/network/api_error.dart';
@@ -12,16 +13,22 @@ import 'package:thingstead/features/organizer/organizer_providers.dart';
 
 import '../../helpers/fakes.dart';
 
-/// A check-in repository that always fails, for the rollback path.
+/// A check-in repository that always fails with [error].
 class _FailingCheckin implements CheckinRepository {
-  @override
-  Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn}) async =>
-      throw ApiError.network();
+  _FailingCheckin(this.error);
+
+  final ApiError error;
 
   @override
-  Future<ScanResult> scan(String o, String code, {String? eventSlug}) async =>
-      throw ApiError.network();
+  Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn}) async =>
+      throw error;
+
+  @override
+  Future<ScanResult> scan(String o, String code, {String? eventSlug}) async => throw error;
 }
+
+/// Lets a test wait for the cache stream to reach the controller.
+Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 30));
 
 void main() {
 
@@ -60,18 +67,24 @@ void main() {
   });
 
   test('toggle is optimistic, then takes the server timestamp', () async {
-    final world = TestWorld();
+    // Slow server so the optimistic state is observable.
+    final world = TestWorld(
+      latency: const FakeLatency(min: Duration(milliseconds: 150), max: Duration(milliseconds: 150)),
+    );
     final c = await signedIn(world);
     final p = attendeesControllerProvider('acme', 'design-workshop');
+    c.listen(p, (_, _) {}); // keep the auto-dispose provider alive, like a screen would
     final s = await c.read(p.future);
     final target = s.attendees.firstWhere((a) => a.canCheckIn && !a.checkedIn);
 
     final future = c.read(p.notifier).toggle(target);
+    await settle();
     final mid = c.read(p).requireValue;
     expect(mid.busyIds, contains(target.id));
     expect(mid.attendees.firstWhere((a) => a.id == target.id).checkedIn, isTrue);
 
     expect(await future, isNull);
+    await settle();
     final after = c.read(p).requireValue;
     expect(after.busyIds, isEmpty);
     expect(after.attendees.firstWhere((a) => a.id == target.id).checkedInAt, testNow);
@@ -79,25 +92,56 @@ void main() {
 
     // And back off again.
     expect(await c.read(p.notifier).toggle(after.attendees.firstWhere((a) => a.id == target.id)), isNull);
+    await settle();
     expect(c.read(p).requireValue.attendees.firstWhere((a) => a.id == target.id).checkedIn, isFalse);
   });
 
-  test('toggle rolls back and reports the error when the request fails', () async {
-    final c = await signedIn(TestWorld(), checkin: _FailingCheckin());
+  test('a transport failure keeps the optimistic state and queues the toggle', () async {
+    final world = TestWorld();
+    final c = await signedIn(world, checkin: _FailingCheckin(ApiError.network()));
     final p = attendeesControllerProvider('acme', 'design-workshop');
+    c.listen(p, (_, _) {}); // keep the auto-dispose provider alive, like a screen would
     final s = await c.read(p.future);
     final target = s.attendees.firstWhere((a) => a.canCheckIn && !a.checkedIn);
 
     final error = await c.read(p.notifier).toggle(target);
-    expect(error, ApiError.networkMessage);
+    expect(error, isNull);
+    await settle();
+    final after = c.read(p).requireValue;
+    expect(after.attendees.firstWhere((a) => a.id == target.id).checkedIn, isTrue);
+    expect(after.pendingIds, contains(target.id));
+    expect(after.busyIds, isEmpty);
+    // The sync controller already tried once and backed off.
+    final op = (await world.db.watchOpenOps().first).single;
+    expect(op.registrationId, target.id);
+    expect(op.state, 'pending');
+    expect(op.attempts, 1);
+    expect(op.nextAttemptAt.isAfter(testNow), isTrue);
+  });
+
+  test('a server refusal rolls back and reports the message', () async {
+    final c = await signedIn(
+      TestWorld(),
+      checkin: _FailingCheckin(ApiError.fromResponse(404, {'error': 'Not found'})),
+    );
+    final p = attendeesControllerProvider('acme', 'design-workshop');
+    c.listen(p, (_, _) {}); // keep the auto-dispose provider alive, like a screen would
+    final s = await c.read(p.future);
+    final target = s.attendees.firstWhere((a) => a.canCheckIn && !a.checkedIn);
+
+    final error = await c.read(p.notifier).toggle(target);
+    expect(error, 'Not found');
+    await settle();
     final after = c.read(p).requireValue;
     expect(after.attendees.firstWhere((a) => a.id == target.id).checkedIn, isFalse);
+    expect(after.pendingIds, isEmpty);
     expect(after.busyIds, isEmpty);
   });
 
   test('waitlisted, cancelled and erased rows cannot be toggled', () async {
     final c = await signedIn(TestWorld());
     final p = attendeesControllerProvider('acme', 'summer-meetup');
+    c.listen(p, (_, _) {}); // keep the auto-dispose provider alive, like a screen would
     final s = await c.read(p.future);
     for (final status in [RegistrationStatus.waitlist, RegistrationStatus.cancelled]) {
       final a = s.attendees.firstWhere((a) => a.status == status);
@@ -113,6 +157,7 @@ void main() {
     final workshopBefore = before.events.firstWhere((e) => e.slug == 'design-workshop').checkedIn;
 
     final p = attendeesControllerProvider('acme', 'design-workshop');
+    c.listen(p, (_, _) {}); // keep the auto-dispose provider alive, like a screen would
     final s = await c.read(p.future);
     await c.read(p.notifier).toggle(s.attendees.firstWhere((a) => a.canCheckIn && !a.checkedIn));
 

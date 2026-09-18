@@ -11,6 +11,9 @@ part of 'scanner_controller.dart';
 /// One scanning session for an org (optionally pinned to one event).
 /// Guards against the camera reporting the same QR many times while a
 /// request is in flight — port of the `lock` ref in the Expo ScannerScreen.
+///
+/// Offline (or when the server cannot be reached) the scan is decided
+/// against the local cache and queued for replay; see [OfflineResolver].
 
 @ProviderFor(ScannerController)
 final scannerControllerProvider = ScannerControllerFamily._();
@@ -18,11 +21,17 @@ final scannerControllerProvider = ScannerControllerFamily._();
 /// One scanning session for an org (optionally pinned to one event).
 /// Guards against the camera reporting the same QR many times while a
 /// request is in flight — port of the `lock` ref in the Expo ScannerScreen.
+///
+/// Offline (or when the server cannot be reached) the scan is decided
+/// against the local cache and queued for replay; see [OfflineResolver].
 final class ScannerControllerProvider
     extends $NotifierProvider<ScannerController, ScannerState> {
   /// One scanning session for an org (optionally pinned to one event).
   /// Guards against the camera reporting the same QR many times while a
   /// request is in flight — port of the `lock` ref in the Expo ScannerScreen.
+  ///
+  /// Offline (or when the server cannot be reached) the scan is decided
+  /// against the local cache and queued for replay; see [OfflineResolver].
   ScannerControllerProvider._({
     required ScannerControllerFamily super.from,
     required (String, String?) super.argument,
@@ -67,11 +76,14 @@ final class ScannerControllerProvider
   }
 }
 
-String _$scannerControllerHash() => r'447365f5e31d235f657df7559f7ce41ab9cdb352';
+String _$scannerControllerHash() => r'37ec89b6cd650a912941d3a7a54f96aaca260f82';
 
 /// One scanning session for an org (optionally pinned to one event).
 /// Guards against the camera reporting the same QR many times while a
 /// request is in flight — port of the `lock` ref in the Expo ScannerScreen.
+///
+/// Offline (or when the server cannot be reached) the scan is decided
+/// against the local cache and queued for replay; see [OfflineResolver].
 
 final class ScannerControllerFamily extends $Family
     with
@@ -94,6 +106,9 @@ final class ScannerControllerFamily extends $Family
   /// One scanning session for an org (optionally pinned to one event).
   /// Guards against the camera reporting the same QR many times while a
   /// request is in flight — port of the `lock` ref in the Expo ScannerScreen.
+  ///
+  /// Offline (or when the server cannot be reached) the scan is decided
+  /// against the local cache and queued for replay; see [OfflineResolver].
 
   ScannerControllerProvider call(String org, String? eventSlug) =>
       ScannerControllerProvider._(argument: (org, eventSlug), from: this);
@@ -105,6 +120,9 @@ final class ScannerControllerFamily extends $Family
 /// One scanning session for an org (optionally pinned to one event).
 /// Guards against the camera reporting the same QR many times while a
 /// request is in flight — port of the `lock` ref in the Expo ScannerScreen.
+///
+/// Offline (or when the server cannot be reached) the scan is decided
+/// against the local cache and queued for replay; see [OfflineResolver].
 
 abstract class _$ScannerController extends $Notifier<ScannerState> {
   late final _$args = ref.$arg as (String, String?);

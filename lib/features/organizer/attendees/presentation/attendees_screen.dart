@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../checkin/presentation/sync_badge.dart';
 import '../../orgs/application/selected_org_controller.dart';
 import '../application/attendees_controller.dart';
 import 'attendee_row.dart';
@@ -81,10 +82,34 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
               padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
               child: Row(
                 children: [
-                  Text(
-                    '${state.requireValue.checkedInCount} of '
-                    '${state.requireValue.attendees.length} checked in',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                  Expanded(
+                    child: Text(
+                      '${state.requireValue.checkedInCount} of '
+                      '${state.requireValue.attendees.length} checked in',
+                      style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                    ),
+                  ),
+                  const SyncBadge(),
+                ],
+              ),
+            ),
+          if (state.value?.stale ?? false)
+            Container(
+              margin: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x2, Spacing.x4, 0),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.x3, vertical: Spacing.x2),
+              decoration: BoxDecoration(
+                color: AppColors.warnBg,
+                borderRadius: BorderRadius.circular(Radii.sm),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.cloud_off_outlined, size: 16, color: AppColors.warn),
+                  const SizedBox(width: Spacing.x2),
+                  Expanded(
+                    child: Text(
+                      'Showing the saved list. Check-ins will sync when the server is reachable.',
+                      style: const TextStyle(color: AppColors.warn, fontSize: 12),
+                    ),
                   ),
                 ],
               ),
@@ -119,6 +144,7 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
                       return AttendeeRow(
                         attendee: a,
                         busy: data.busyIds.contains(a.id),
+                        pending: data.pendingIds.contains(a.id),
                         zone: data.list.event.timezone,
                         onToggle: () async {
                           final error = await ref.read(provider.notifier).toggle(a);

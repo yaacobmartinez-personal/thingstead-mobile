@@ -11,7 +11,9 @@ import '../../../../core/router/guards.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/section_card.dart';
+import '../../../organizer/checkin/application/sync_controller.dart';
 import '../../../organizer/settings/presentation/delete_account_dialog.dart';
 import '../../application/auth_controller.dart';
 import '../../application/auth_state.dart';
@@ -138,7 +140,23 @@ class SignOutTile extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.logout),
       title: const Text('Sign out'),
-      onTap: () => ref.read(authControllerProvider.notifier).signOut(),
+      onTap: () async {
+        // Queued check-ins die with a deliberate sign-out; say so first.
+        final pending = ref.read(syncControllerProvider).pending;
+        if (pending > 0) {
+          final ok = await confirmDialog(
+            context,
+            title: 'Unsynced check-ins',
+            message: 'You have $pending check-in${pending == 1 ? '' : 's'} that '
+                "haven't reached the server yet. Signing out discards them. "
+                'Sign out anyway?',
+            confirmLabel: 'Sign out anyway',
+            destructive: true,
+          );
+          if (!ok) return;
+        }
+        await ref.read(authControllerProvider.notifier).signOut();
+      },
     );
   }
 }

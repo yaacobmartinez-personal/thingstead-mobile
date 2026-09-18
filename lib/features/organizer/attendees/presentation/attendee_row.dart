@@ -17,6 +17,7 @@ class AttendeeRow extends StatelessWidget {
     required this.onToggle,
     this.zone,
     this.onLongPress,
+    this.pending = false,
   });
 
   final Attendee attendee;
@@ -24,6 +25,9 @@ class AttendeeRow extends StatelessWidget {
   final VoidCallback onToggle;
   final String? zone;
   final VoidCallback? onLongPress;
+
+  /// A queued check-in is waiting to sync for this row.
+  final bool pending;
 
   @override
   Widget build(BuildContext context) {
@@ -73,19 +77,28 @@ class AttendeeRow extends StatelessWidget {
             ),
         ],
       ),
-      trailing: busy
-          ? const SizedBox(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (pending)
+            const Tooltip(
+              message: 'Waiting to sync',
+              child: Icon(Icons.cloud_upload_outlined, size: 18, color: AppColors.warn),
+            ),
+          if (busy)
+            const SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : a.canCheckIn
-              ? Checkbox(
-                  value: a.checkedIn,
-                  activeColor: AppColors.success,
-                  onChanged: (_) => onToggle(),
-                )
-              : null,
+          else if (a.canCheckIn)
+            Checkbox(
+              value: a.checkedIn,
+              activeColor: AppColors.success,
+              onChanged: (_) => onToggle(),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -11,6 +11,7 @@ import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/verify_screen.dart';
 import '../../features/organizer/attendees/presentation/attendees_screen.dart';
+import '../../features/organizer/checkin/presentation/needs_attention_screen.dart';
 import '../../features/organizer/events/presentation/events_screen.dart';
 import '../../features/organizer/orgs/presentation/org_picker_screen.dart';
 import '../../features/organizer/scanner/presentation/scan_entry_screen.dart';
@@ -132,6 +133,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.orgPicker,
         builder: (context, state) => const OrgPickerScreen(),
+      ),
+      GoRoute(
+        path: Routes.orgSyncAttention,
+        builder: (context, state) => const NeedsAttentionScreen(),
       ),
 
       // ---- organizer shell --------------------------------------------------

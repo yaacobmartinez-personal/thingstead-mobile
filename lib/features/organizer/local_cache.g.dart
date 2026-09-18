@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_router.dart';
+part of 'local_cache.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,43 @@ part of 'app_router.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(appRouter)
-final appRouterProvider = AppRouterProvider._();
+@ProviderFor(localCache)
+final localCacheProvider = LocalCacheProvider._();
 
-final class AppRouterProvider
-    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
-    with $Provider<GoRouter> {
-  AppRouterProvider._()
+final class LocalCacheProvider
+    extends $FunctionalProvider<LocalCache, LocalCache, LocalCache>
+    with $Provider<LocalCache> {
+  LocalCacheProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'appRouterProvider',
+        name: r'localCacheProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$appRouterHash();
+  String debugGetCreateSourceHash() => _$localCacheHash();
 
   @$internal
   @override
-  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<LocalCache> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  GoRouter create(Ref ref) {
-    return appRouter(ref);
+  LocalCache create(Ref ref) {
+    return localCache(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GoRouter value) {
+  Override overrideWithValue(LocalCache value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<GoRouter>(value),
+      providerOverride: $SyncValueProvider<LocalCache>(value),
     );
   }
 }
 
-String _$appRouterHash() => r'70e958ca5cf80f63d37f71073adae2356a1034aa';
+String _$localCacheHash() => r'3b301ffa81b1b1c5a3920ebc5e22a476c415cb98';

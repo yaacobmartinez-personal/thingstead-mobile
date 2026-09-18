@@ -30,7 +30,16 @@ class _ManualEntrySheetState extends State<_ManualEntrySheet> {
     super.dispose();
   }
 
-  void _submit() => Navigator.of(context).pop(_controller.text.trim());
+  Future<void> _submit() async {
+    final text = _controller.text.trim();
+    // Hide the keyboard and let its animation finish before the route pops.
+    // Popping while the IME is still animating out, with a camera texture
+    // underneath, stalls rendering on some Android builds.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+    Navigator.of(context).pop(text);
+  }
 
   @override
   Widget build(BuildContext context) {

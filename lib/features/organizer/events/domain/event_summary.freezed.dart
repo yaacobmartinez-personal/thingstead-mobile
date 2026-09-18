@@ -310,7 +310,9 @@ as int,
 /// @nodoc
 mixin _$EventsPage {
 
- OrgRef get org; List<EventSummary> get events;
+ OrgRef get org; List<EventSummary> get events;/// True when served from the local cache because the server was
+/// unreachable. Never comes from JSON.
+@JsonKey(includeFromJson: false, includeToJson: false) bool get stale;
 /// Create a copy of EventsPage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -324,20 +326,20 @@ $EventsPageCopyWith<EventsPage> get copyWith => _$EventsPageCopyWithImpl<EventsP
 @override
 bool operator ==(Object other) {
   final _this = this as EventsPage;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventsPage&&(identical(other.org, _this.org) || other.org == _this.org)&&const DeepCollectionEquality().equals(other.events, _this.events));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventsPage&&(identical(other.org, _this.org) || other.org == _this.org)&&const DeepCollectionEquality().equals(other.events, _this.events)&&(identical(other.stale, _this.stale) || other.stale == _this.stale));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as EventsPage;
-  return Object.hash(runtimeType,_this.org,const DeepCollectionEquality().hash(_this.events));
+  return Object.hash(runtimeType,_this.org,const DeepCollectionEquality().hash(_this.events),_this.stale);
 }
 
 @override
 String toString() {
   final _this = this as EventsPage;
-  return 'EventsPage(org: ${_this.org}, events: ${_this.events})';
+  return 'EventsPage(org: ${_this.org}, events: ${_this.events}, stale: ${_this.stale})';
 }
 
 
@@ -348,7 +350,7 @@ abstract mixin class $EventsPageCopyWith<$Res>  {
   factory $EventsPageCopyWith(EventsPage value, $Res Function(EventsPage) _then) = _$EventsPageCopyWithImpl;
 @useResult
 $Res call({
- OrgRef org, List<EventSummary> events
+ OrgRef org, List<EventSummary> events,@JsonKey(includeFromJson: false, includeToJson: false) bool stale
 });
 
 
@@ -365,11 +367,12 @@ class _$EventsPageCopyWithImpl<$Res>
 
 /// Create a copy of EventsPage
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? org = null,Object? events = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? org = null,Object? events = null,Object? stale = null,}) {
   return _then(EventsPage(
 org: null == org ? _self.org : org // ignore: cast_nullable_to_non_nullable
 as OrgRef,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
-as List<EventSummary>,
+as List<EventSummary>,stale: null == stale ? _self.stale : stale // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of EventsPage
@@ -463,10 +466,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OrgRef org,  List<EventSummary> events)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OrgRef org,  List<EventSummary> events, @JsonKey(includeFromJson: false, includeToJson: false)  bool stale)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EventsPage() when $default != null:
-return $default(_that.org,_that.events);case _:
+return $default(_that.org,_that.events,_that.stale);case _:
   return orElse();
 
 }
@@ -484,10 +487,10 @@ return $default(_that.org,_that.events);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OrgRef org,  List<EventSummary> events)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OrgRef org,  List<EventSummary> events, @JsonKey(includeFromJson: false, includeToJson: false)  bool stale)  $default,) {final _that = this;
 switch (_that) {
 case _EventsPage():
-return $default(_that.org,_that.events);case _:
+return $default(_that.org,_that.events,_that.stale);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -504,10 +507,10 @@ return $default(_that.org,_that.events);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OrgRef org,  List<EventSummary> events)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OrgRef org,  List<EventSummary> events, @JsonKey(includeFromJson: false, includeToJson: false)  bool stale)?  $default,) {final _that = this;
 switch (_that) {
 case _EventsPage() when $default != null:
-return $default(_that.org,_that.events);case _:
+return $default(_that.org,_that.events,_that.stale);case _:
   return null;
 
 }
@@ -519,7 +522,7 @@ return $default(_that.org,_that.events);case _:
 @JsonSerializable()
 
 class _EventsPage implements EventsPage {
-  const _EventsPage({required this.org,  List<EventSummary> events = const <EventSummary>[]}): _events = events;
+  const _EventsPage({required this.org,  List<EventSummary> events = const <EventSummary>[], @JsonKey(includeFromJson: false, includeToJson: false) this.stale = false}): _events = events;
   factory _EventsPage.fromJson(Map<String, dynamic> json) => _$EventsPageFromJson(json);
 
 @override final  OrgRef org;
@@ -530,6 +533,9 @@ class _EventsPage implements EventsPage {
   return EqualUnmodifiableListView(_events);
 }
 
+/// True when served from the local cache because the server was
+/// unreachable. Never comes from JSON.
+@override@JsonKey(includeFromJson: false, includeToJson: false) final  bool stale;
 
 /// Create a copy of EventsPage
 /// with the given fields replaced by the non-null parameter values.
@@ -544,18 +550,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventsPage&&(identical(other.org, org) || other.org == org)&&const DeepCollectionEquality().equals(other.events, _events));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventsPage&&(identical(other.org, org) || other.org == org)&&const DeepCollectionEquality().equals(other.events, _events)&&(identical(other.stale, stale) || other.stale == stale));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,org,const DeepCollectionEquality().hash(_events));
+    return Object.hash(runtimeType,org,const DeepCollectionEquality().hash(_events),stale);
 }
 
 @override
 String toString() {
-    return 'EventsPage(org: $org, events: $events)';
+    return 'EventsPage(org: $org, events: $events, stale: $stale)';
 }
 
 
@@ -566,7 +572,7 @@ abstract mixin class _$EventsPageCopyWith<$Res> implements $EventsPageCopyWith<$
   factory _$EventsPageCopyWith(_EventsPage value, $Res Function(_EventsPage) _then) = __$EventsPageCopyWithImpl;
 @override @useResult
 $Res call({
- OrgRef org, List<EventSummary> events
+ OrgRef org, List<EventSummary> events,@JsonKey(includeFromJson: false, includeToJson: false) bool stale
 });
 
 
@@ -583,11 +589,12 @@ class __$EventsPageCopyWithImpl<$Res>
 
 /// Create a copy of EventsPage
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? org = null,Object? events = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? org = null,Object? events = null,Object? stale = null,}) {
   return _then(_EventsPage(
 org: null == org ? _self.org : org // ignore: cast_nullable_to_non_nullable
 as OrgRef,events: null == events ? _self._events : events // ignore: cast_nullable_to_non_nullable
-as List<EventSummary>,
+as List<EventSummary>,stale: null == stale ? _self.stale : stale // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

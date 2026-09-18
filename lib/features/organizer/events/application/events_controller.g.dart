@@ -8,16 +8,18 @@ part of 'events_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The org's events with counts. Invalidated by check-in controllers after
-/// a successful mutation so the numbers on the cards stay current (the Expo
-/// app refetched on focus for the same reason).
+/// The org's events with counts, cached on every successful fetch so the
+/// Events and Scan tabs open offline (`stale: true`). Invalidated by the
+/// check-in paths after a successful mutation so the numbers on the cards
+/// stay current (the Expo app refetched on focus for the same reason).
 
 @ProviderFor(orgEvents)
 final orgEventsProvider = OrgEventsFamily._();
 
-/// The org's events with counts. Invalidated by check-in controllers after
-/// a successful mutation so the numbers on the cards stay current (the Expo
-/// app refetched on focus for the same reason).
+/// The org's events with counts, cached on every successful fetch so the
+/// Events and Scan tabs open offline (`stale: true`). Invalidated by the
+/// check-in paths after a successful mutation so the numbers on the cards
+/// stay current (the Expo app refetched on focus for the same reason).
 
 final class OrgEventsProvider
     extends
@@ -27,9 +29,10 @@ final class OrgEventsProvider
           FutureOr<EventsPage>
         >
     with $FutureModifier<EventsPage>, $FutureProvider<EventsPage> {
-  /// The org's events with counts. Invalidated by check-in controllers after
-  /// a successful mutation so the numbers on the cards stay current (the Expo
-  /// app refetched on focus for the same reason).
+  /// The org's events with counts, cached on every successful fetch so the
+  /// Events and Scan tabs open offline (`stale: true`). Invalidated by the
+  /// check-in paths after a successful mutation so the numbers on the cards
+  /// stay current (the Expo app refetched on focus for the same reason).
   OrgEventsProvider._({
     required OrgEventsFamily super.from,
     required String super.argument,
@@ -73,11 +76,12 @@ final class OrgEventsProvider
   }
 }
 
-String _$orgEventsHash() => r'5cce109c0a5e29586afd6d90f9341a374976b93e';
+String _$orgEventsHash() => r'c004295620f22bf9ff67eafccfe7fada113ec1b4';
 
-/// The org's events with counts. Invalidated by check-in controllers after
-/// a successful mutation so the numbers on the cards stay current (the Expo
-/// app refetched on focus for the same reason).
+/// The org's events with counts, cached on every successful fetch so the
+/// Events and Scan tabs open offline (`stale: true`). Invalidated by the
+/// check-in paths after a successful mutation so the numbers on the cards
+/// stay current (the Expo app refetched on focus for the same reason).
 
 final class OrgEventsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<EventsPage>, String> {
@@ -90,9 +94,10 @@ final class OrgEventsFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The org's events with counts. Invalidated by check-in controllers after
-  /// a successful mutation so the numbers on the cards stay current (the Expo
-  /// app refetched on focus for the same reason).
+  /// The org's events with counts, cached on every successful fetch so the
+  /// Events and Scan tabs open offline (`stale: true`). Invalidated by the
+  /// check-in paths after a successful mutation so the numbers on the cards
+  /// stay current (the Expo app refetched on focus for the same reason).
 
   OrgEventsProvider call(String org) =>
       OrgEventsProvider._(argument: org, from: this);

@@ -8,18 +8,24 @@ part of 'attendees_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Loads the list and applies manual check-in toggles optimistically, rolling
-/// back on failure — port of `toggle` in the Expo AttendeesScreen.
+/// Fetches into the cache and renders from it, so a manual toggle, a scan,
+/// and the sync worker all update the screen through one path. Toggles are
+/// optimistic; when the server is unreachable they are queued instead of
+/// rolled back.
 
 @ProviderFor(AttendeesController)
 final attendeesControllerProvider = AttendeesControllerFamily._();
 
-/// Loads the list and applies manual check-in toggles optimistically, rolling
-/// back on failure — port of `toggle` in the Expo AttendeesScreen.
+/// Fetches into the cache and renders from it, so a manual toggle, a scan,
+/// and the sync worker all update the screen through one path. Toggles are
+/// optimistic; when the server is unreachable they are queued instead of
+/// rolled back.
 final class AttendeesControllerProvider
     extends $AsyncNotifierProvider<AttendeesController, AttendeesState> {
-  /// Loads the list and applies manual check-in toggles optimistically, rolling
-  /// back on failure — port of `toggle` in the Expo AttendeesScreen.
+  /// Fetches into the cache and renders from it, so a manual toggle, a scan,
+  /// and the sync worker all update the screen through one path. Toggles are
+  /// optimistic; when the server is unreachable they are queued instead of
+  /// rolled back.
   AttendeesControllerProvider._({
     required AttendeesControllerFamily super.from,
     required (String, String) super.argument,
@@ -57,10 +63,12 @@ final class AttendeesControllerProvider
 }
 
 String _$attendeesControllerHash() =>
-    r'430d9f0bfe9ed550a486730759247afcad39d07b';
+    r'e83cdea8964997f7c3cc9fc5c6a5f59a72d7874f';
 
-/// Loads the list and applies manual check-in toggles optimistically, rolling
-/// back on failure — port of `toggle` in the Expo AttendeesScreen.
+/// Fetches into the cache and renders from it, so a manual toggle, a scan,
+/// and the sync worker all update the screen through one path. Toggles are
+/// optimistic; when the server is unreachable they are queued instead of
+/// rolled back.
 
 final class AttendeesControllerFamily extends $Family
     with
@@ -80,8 +88,10 @@ final class AttendeesControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Loads the list and applies manual check-in toggles optimistically, rolling
-  /// back on failure — port of `toggle` in the Expo AttendeesScreen.
+  /// Fetches into the cache and renders from it, so a manual toggle, a scan,
+  /// and the sync worker all update the screen through one path. Toggles are
+  /// optimistic; when the server is unreachable they are queued instead of
+  /// rolled back.
 
   AttendeesControllerProvider call(String org, String event) =>
       AttendeesControllerProvider._(argument: (org, event), from: this);
@@ -90,8 +100,10 @@ final class AttendeesControllerFamily extends $Family
   String toString() => r'attendeesControllerProvider';
 }
 
-/// Loads the list and applies manual check-in toggles optimistically, rolling
-/// back on failure — port of `toggle` in the Expo AttendeesScreen.
+/// Fetches into the cache and renders from it, so a manual toggle, a scan,
+/// and the sync worker all update the screen through one path. Toggles are
+/// optimistic; when the server is unreachable they are queued instead of
+/// rolled back.
 
 abstract class _$AttendeesController extends $AsyncNotifier<AttendeesState> {
   late final _$args = ref.$arg as (String, String);
