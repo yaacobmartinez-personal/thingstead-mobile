@@ -1,0 +1,16 @@
+# Keep code generation scoped to lib/ so build_runner stays fast.
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        generate_for:
+          - lib/**
+      freezed:
+        generate_for:
+          - lib/**
+      json_serializable:
+        generate_for:
+          - lib/**
+      drift_dev:
+        generate_for:
+          - lib/**

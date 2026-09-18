@@ -1,0 +1,25 @@
+# Lints for the Thingstead app.
+#
+# riverpod_lint/custom_lint are intentionally absent: as of Sept 2026 custom_lint
+# pins analyzer ^8 while build_runner needs analyzer >=13, so they cannot
+# coexist. Re-add both once custom_lint catches up.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.drift.dart"
+    - build/**
+    - android/**
+    - ios/**
+  errors:
+    invalid_annotation_target: ignore # freezed + json_serializable on the same class
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    always_declare_return_types: true
+    unawaited_futures: true
+    avoid_print: true
+    directives_ordering: true

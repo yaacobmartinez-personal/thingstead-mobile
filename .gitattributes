@@ -1,0 +1,9 @@
+# Store LF in the repo and check out LF on every platform (Windows + Mac).
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jar binary
+*.keystore binary
+*.jks binary
