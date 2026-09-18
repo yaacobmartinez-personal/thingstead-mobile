@@ -59,7 +59,7 @@ final class AuthControllerProvider
   }
 }
 
-String _$authControllerHash() => r'5fcf171c0d208730524ee99a243784fa80672c1e';
+String _$authControllerHash() => r'c89f458ca4d10c6f10af6a76c7231b7818494674';
 
 /// The session state machine.
 ///

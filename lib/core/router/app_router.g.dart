@@ -8,23 +8,13 @@ part of 'app_router.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
-/// auth stack, and a few top-level screens. Each shell keeps its own tab
-/// state via `indexedStack`. Redirect rules live in [computeRedirect].
 
 @ProviderFor(appRouter)
 final appRouterProvider = AppRouterProvider._();
 
-/// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
-/// auth stack, and a few top-level screens. Each shell keeps its own tab
-/// state via `indexedStack`. Redirect rules live in [computeRedirect].
-
 final class AppRouterProvider
     extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
     with $Provider<GoRouter> {
-  /// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
-  /// auth stack, and a few top-level screens. Each shell keeps its own tab
-  /// state via `indexedStack`. Redirect rules live in [computeRedirect].
   AppRouterProvider._()
     : super(
         from: null,
@@ -58,4 +48,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'8f2945a9013156915435f884516b2a4fb2b1b244';
+String _$appRouterHash() => r'b19e8ad8f0c08fc0498c81832c6ef70e0bf9a3a7';

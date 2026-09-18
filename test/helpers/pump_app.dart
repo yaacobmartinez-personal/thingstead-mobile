@@ -15,7 +15,12 @@ Future<ProviderContainer> pumpApp(
   Widget child, {
   required TestWorld world,
   List<Override> extraOverrides = const [],
+  Future<void> Function(ProviderContainer container)? setup,
 }) async {
+  // A phone-shaped surface so lists show more than three rows.
+  tester.view.physicalSize = const Size(1080, 2400);
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
   final router = GoRouter(
     routes: [
       GoRoute(path: '/', builder: (_, _) => child),
@@ -29,6 +34,7 @@ Future<ProviderContainer> pumpApp(
     overrides: [...world.overrides, ...extraOverrides],
   );
   addTearDown(container.dispose);
+  if (setup != null) await setup(container);
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,

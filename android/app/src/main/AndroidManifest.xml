@@ -1,6 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- QR check-in. The camera is optional so phones without one can still
+         install and use manual code entry. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
-        android:label="thingstead"
+        android:label="Thingstead"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

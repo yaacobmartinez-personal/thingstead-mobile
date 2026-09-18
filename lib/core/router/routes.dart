@@ -24,6 +24,10 @@ abstract final class Routes {
   // Organizer shell
   static const orgEvents = '/o/events';
   static const orgScan = '/o/scan';
+
+  /// The live camera, pushed over the shell. Query "event" pins an event;
+  /// "code" submits a code on open (QR deep link).
+  static const orgScanLive = '/o/scan/live';
   static const orgTeam = '/o/team';
   static const orgSettings = '/o/settings';
   static const orgPicker = '/o/orgs';

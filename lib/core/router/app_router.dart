@@ -10,6 +10,11 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/verify_screen.dart';
+import '../../features/organizer/attendees/presentation/attendees_screen.dart';
+import '../../features/organizer/events/presentation/events_screen.dart';
+import '../../features/organizer/orgs/presentation/org_picker_screen.dart';
+import '../../features/organizer/scanner/presentation/scan_entry_screen.dart';
+import '../../features/organizer/scanner/presentation/scanner_screen.dart';
 import '../../features/organizer/settings/presentation/server_address_screen.dart';
 import '../../features/organizer/settings/presentation/settings_screen.dart';
 import '../../features/shell/application/app_mode_controller.dart';
@@ -25,6 +30,11 @@ part 'app_router.g.dart';
 /// Two independent bottom-nav shells (attendee `/a`, organizer `/o`), the
 /// auth stack, and a few top-level screens. Each shell keeps its own tab
 /// state via `indexedStack`. Redirect rules live in [computeRedirect].
+///
+/// Routes that must cover the bottom nav (the live scanner) push on the root
+/// navigator via [rootNavigatorKey].
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   final refresh = RouterRefresh(ref);
@@ -35,6 +45,7 @@ GoRouter appRouter(Ref ref) {
   final initial = auth.isSignedIn ? mode.home : AppMode.attendee.home;
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: initial,
     refreshListenable: refresh,
     debugLogDiagnostics: false,
@@ -118,6 +129,11 @@ GoRouter appRouter(Ref ref) {
         ],
       ),
 
+      GoRoute(
+        path: Routes.orgPicker,
+        builder: (context, state) => const OrgPickerScreen(),
+      ),
+
       // ---- organizer shell --------------------------------------------------
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -127,11 +143,14 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.orgEvents,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Events',
-                  phase: 'Phase 2',
-                  icon: Icons.event_note_outlined,
-                ),
+                builder: (context, state) => const EventsScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':event/attendees',
+                    builder: (context, state) =>
+                        AttendeesScreen(eventSlug: state.pathParameters['event']!),
+                  ),
+                ],
               ),
             ],
           ),
@@ -139,11 +158,17 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.orgScan,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Scan check-in',
-                  phase: 'Phase 2',
-                  icon: Icons.qr_code_scanner,
-                ),
+                builder: (context, state) => const ScanEntryScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'live',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => ScannerScreen(
+                      eventSlug: state.uri.queryParameters['event'],
+                      initialCode: state.uri.queryParameters['code'],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
