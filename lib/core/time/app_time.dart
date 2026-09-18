@@ -124,6 +124,20 @@ abstract final class AppTime {
     return toWallClock(instant, zone) == normalized;
   }
 
+  /// Pieces for a date tile: ("Dec", "24", "Monday", "8:00 PM – 10:00 PM").
+  static (String, String, String, String) dateParts(
+    DateTime startsAt,
+    DateTime? endsAt,
+    String zone,
+  ) {
+    final s = inZone(startsAt, zone);
+    final t = DateFormat('h:mm a');
+    final time = endsAt == null
+        ? '${t.format(s)} · ${zoneLabel(startsAt, zone)}'
+        : '${t.format(s)} – ${t.format(inZone(endsAt, zone))}';
+    return (DateFormat('MMM').format(s), '${s.day}', DateFormat('EEEE').format(s), time);
+  }
+
   /// Every zone this build knows, for the event editor's picker.
   static List<String> supportedTimeZones() {
     ensureInitialized();

@@ -17,6 +17,8 @@ class Prefs {
   static const keyAppMode = 'appMode';
   static const keySelectedOrg = 'selectedOrg';
   static const keyRecentOrgs = 'recentOrgs';
+  static const keyAppearance = 'appearance';
+  static const keyOnboardingSeen = 'onboardingSeen';
 
   Future<String?> getString(String key) async {
     try {

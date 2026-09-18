@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/motion.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/ui/round_icon_button.dart';
 import '../../events/application/events_controller.dart';
 import '../../orgs/application/selected_org_controller.dart';
 import '../application/scanner_controller.dart';
@@ -157,14 +160,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                   ),
                 ),
                 const Spacer(),
-                Container(
-                  width: 240,
-                  height: 240,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.gold, width: 3),
-                    borderRadius: BorderRadius.circular(Radii.lg),
-                  ),
-                ),
+                _Reticle(active: state.accepting),
                 const Spacer(),
                 if (state.accepting)
                   const Padding(
@@ -184,25 +180,24 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
           SafeArea(
             child: Row(
               children: [
-                IconButton(
-                  onPressed: () => context.pop(),
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  tooltip: 'Done',
+                Padding(
+                  padding: const EdgeInsets.only(left: Spacing.x3),
+                  child: RoundIconButton(icon: Icons.close, tooltip: 'Done', onPressed: () => context.pop()),
                 ),
                 const Spacer(),
                 if (state.scanned > 0)
                   _Pill(child: Text('${state.scanned} in')),
-                IconButton(
-                  onPressed: _manual,
-                  icon: const Icon(Icons.keyboard_alt_outlined, color: Colors.white),
-                  tooltip: 'Enter a code',
-                ),
-                if (_camera != null)
-                  IconButton(
-                    onPressed: () => _camera!.toggleTorch(),
-                    icon: const Icon(Icons.flashlight_on_outlined, color: Colors.white),
+                const SizedBox(width: Spacing.x2),
+                RoundIconButton(icon: Icons.keyboard_alt_outlined, tooltip: 'Enter a code', onPressed: _manual),
+                if (_camera != null) ...[
+                  const SizedBox(width: Spacing.x2),
+                  RoundIconButton(
+                    icon: Icons.flashlight_on_outlined,
                     tooltip: 'Torch',
+                    onPressed: () => _camera!.toggleTorch(),
                   ),
+                ],
+                const SizedBox(width: Spacing.x3),
               ],
             ),
           ),
@@ -248,4 +243,63 @@ class _Pill extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Rounded lime corners that breathe while the scanner is accepting and
+/// snap solid when a code is being checked. Static under reduced motion.
+class _Reticle extends ConsumerWidget {
+  const _Reticle({required this.active});
+
+  final bool active;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final animate = ref.watch(motionSettingsProvider);
+    Widget box = SizedBox(
+      width: 240,
+      height: 240,
+      child: CustomPaint(painter: _CornersPainter(active ? p.lime : Colors.white)),
+    );
+    if (animate && active) {
+      box = box
+          .animate(onPlay: (c) => c.repeat(reverse: true))
+          .scale(begin: const Offset(1, 1), end: const Offset(1.04, 1.04), duration: 1200.ms);
+    }
+    return box;
+  }
+}
+
+class _CornersPainter extends CustomPainter {
+  _CornersPainter(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    const len = 34.0;
+    const r = 24.0;
+    final w = size.width;
+    final h = size.height;
+    void corner(Offset c, double sx, double sy) {
+      final path = Path()
+        ..moveTo(c.dx, c.dy + sy * len)
+        ..lineTo(c.dx, c.dy + sy * r)
+        ..quadraticBezierTo(c.dx, c.dy, c.dx + sx * r, c.dy)
+        ..lineTo(c.dx + sx * len, c.dy);
+      canvas.drawPath(path, paint);
+    }
+
+    corner(Offset.zero, 1, 1);
+    corner(Offset(w, 0), -1, 1);
+    corner(Offset(0, h), 1, -1);
+    corner(Offset(w, h), -1, -1);
+  }
+
+  @override
+  bool shouldRepaint(_CornersPainter old) => old.color != color;
 }

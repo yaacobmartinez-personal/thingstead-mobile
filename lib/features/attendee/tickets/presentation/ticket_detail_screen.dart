@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/motion.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/theme/status_chip.dart';
+import '../../../../core/theme/typography.dart';
 import '../../../../core/time/app_time.dart';
+import '../../../../core/ui/pill_button.dart';
+import '../../../../core/ui/stagger.dart';
+import '../../../../core/ui/ticket_card.dart';
+import '../../../../core/ui/tiles.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/empty_state.dart';
-import '../../../../core/widgets/section_card.dart';
 import '../application/tickets_controller.dart';
 import '../domain/ticket.dart';
 
-/// One ticket: the QR when it is a confirmed place, the details, and
-/// "Cancel my place" until the event starts. Port of the web manage page.
+/// One ticket as a ticket: event on the top half, the QR on the stub when it
+/// is a confirmed place, and "Cancel my place" until the event starts.
 class TicketDetailScreen extends ConsumerStatefulWidget {
   const TicketDetailScreen({super.key, required this.ticketId});
 
@@ -93,7 +99,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends ConsumerWidget {
   const _Body({required this.ticket, required this.busy, required this.onCancel});
 
   final Ticket ticket;
@@ -101,62 +107,76 @@ class _Body extends StatelessWidget {
   final VoidCallback onCancel;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
     final t = ticket;
     final e = t.event;
+    final (month, day, weekday, time) = AppTime.dateParts(e.startsAt, e.endsAt, e.timezone);
+    final tone = t.isCancelled
+        ? ChipTone.muted
+        : t.isConfirmed
+            ? ChipTone.success
+            : ChipTone.warn;
+
     return ListView(
-      padding: const EdgeInsets.all(Spacing.x4),
+      padding: const EdgeInsets.fromLTRB(Spacing.gutter, Spacing.x2, Spacing.gutter, Spacing.x8),
       children: [
-        if (t.hasQr) TicketQr(ticket: t) else _NoQrCard(ticket: t),
-        const SizedBox(height: Spacing.x4),
-        SectionCard(
-          heading: e.title,
-          children: [
-            Text(
-              AppTime.formatEventWhen(e.startsAt, e.endsAt, e.timezone),
-              style: const TextStyle(color: AppColors.muted, height: 1.4),
+        Enter(
+          child: TicketCard(
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(t.org.name.toUpperCase(),
+                          style: AppType.caption.copyWith(color: p.faint)),
+                    ),
+                    StatusChip(t.statusLabel, tone: tone, dot: t.checkedIn),
+                  ],
+                ),
+                const SizedBox(height: Spacing.x2),
+                Text(e.title, style: AppType.title.copyWith(color: p.ink)),
+                const SizedBox(height: Spacing.x4),
+                DateTile(month: month, day: day, weekday: weekday, time: time, compact: true),
+                const SizedBox(height: Spacing.x4),
+                _Row('Name', t.name ?? '—'),
+                _Row('Email', t.email),
+                if (t.checkedIn) _Row('Checked in', AppTime.formatTime(t.checkedInAt!, e.timezone)),
+              ],
             ),
-            const SizedBox(height: Spacing.x3),
-            _Row('Organizer', t.org.name),
-            _Row('Name', t.name ?? '—'),
-            _Row('Email', t.email),
-            if (t.checkedIn)
-              _Row('Checked in', AppTime.formatTime(t.checkedInAt!, e.timezone)),
-            const SizedBox(height: Spacing.x2),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: StatusChip(
-                t.statusLabel,
-                tone: switch (t.status) {
-                  _ when t.isCancelled => ChipTone.muted,
-                  _ when t.isConfirmed => ChipTone.success,
-                  _ => ChipTone.warn,
-                },
-              ),
-            ),
-          ],
+            stub: t.hasQr ? _Qr(ticket: t) : _NoQr(ticket: t),
+          ),
         ),
-        const SizedBox(height: Spacing.x3),
-        OutlinedButton.icon(
-          onPressed: () => context.push(Routes.attendeeEvent(t.org.slug, e.slug)),
-          icon: const Icon(Icons.open_in_new, size: 18),
-          label: const Text('Event page'),
+        const SizedBox(height: Spacing.x4),
+        Enter(
+          index: 1,
+          child: PillButton(
+            label: 'Event page',
+            icon: Icons.open_in_new,
+            variant: PillVariant.ghost,
+            onPressed: () => context.push(Routes.attendeeEvent(t.org.slug, e.slug)),
+          ),
         ),
         if (t.canCancel) ...[
-          const SizedBox(height: Spacing.x6),
-          TextButton(
-            onPressed: busy ? null : onCancel,
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: Text(busy ? 'Cancelling…' : 'Cancel my place'),
+          const SizedBox(height: Spacing.x3),
+          Enter(
+            index: 2,
+            child: PillButton(
+              label: busy ? 'Cancelling…' : 'Cancel my place',
+              variant: PillVariant.danger,
+              loading: busy,
+              onPressed: busy ? null : onCancel,
+            ),
           ),
         ] else if (t.isCancelled)
-          const Padding(
-            padding: EdgeInsets.only(top: Spacing.x4),
+          Padding(
+            padding: const EdgeInsets.only(top: Spacing.x4),
             child: Text(
               'You gave up this place. If you can make it after all, sign up again '
               'on the event page — though the place may have gone to someone else by now.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.muted, height: 1.4),
+              style: AppType.small.copyWith(color: p.muted),
             ),
           )
         else if (t.started)
@@ -165,7 +185,7 @@ class _Body extends StatelessWidget {
             child: Text(
               '${e.title} has already started, so it can no longer be cancelled here.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted, height: 1.4),
+              style: AppType.small.copyWith(color: p.muted),
             ),
           ),
       ],
@@ -173,72 +193,76 @@ class _Body extends StatelessWidget {
   }
 }
 
-/// The check-in QR, big and on white so a scanner reads it in any light.
-class TicketQr extends StatelessWidget {
-  const TicketQr({super.key, required this.ticket});
+/// The QR, big and on white so a scanner reads it in any light, breathing
+/// very slightly so it reads as live.
+class _Qr extends ConsumerWidget {
+  const _Qr({required this.ticket});
 
   final Ticket ticket;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.x4),
-        child: Column(
-          children: [
-            Semantics(
-              label: 'Your check-in QR code',
-              child: QrImageView(
-                data: ticket.qrPayload,
-                size: 260,
-                backgroundColor: Colors.white,
-                errorCorrectionLevel: QrErrorCorrectLevel.M,
-                eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: AppColors.navyDark),
-                dataModuleStyle: const QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square,
-                  color: AppColors.navyDark,
-                ),
-              ),
-            ),
-            const SizedBox(height: Spacing.x2),
-            Text(
-              ticket.checkedIn ? "You're checked in." : 'Show this at the door.',
-              style: TextStyle(
-                color: ticket.checkedIn ? AppColors.success : AppColors.muted,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final animate = ref.watch(motionSettingsProvider);
+    Widget qr = Container(
+      padding: const EdgeInsets.all(Spacing.x3),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(Radii.md)),
+      child: Semantics(
+        label: 'Your check-in QR code',
+        child: QrImageView(
+          data: ticket.qrPayload,
+          size: 220,
+          padding: EdgeInsets.zero,
+          backgroundColor: Colors.white,
+          errorCorrectionLevel: QrErrorCorrectLevel.M,
+          eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF171C14)),
+          dataModuleStyle: const QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: Color(0xFF171C14),
+          ),
         ),
       ),
+    );
+    if (animate) {
+      qr = qr
+          .animate(onPlay: (c) => c.repeat(reverse: true))
+          .scale(begin: const Offset(1, 1), end: const Offset(1.02, 1.02), duration: 1800.ms);
+    }
+    return Column(
+      children: [
+        Center(child: qr),
+        const SizedBox(height: Spacing.x3),
+        Text(
+          ticket.checkedIn ? "You're checked in." : 'Show this at the door.',
+          style: AppType.bodyStrong.copyWith(color: ticket.checkedIn ? p.success : p.muted),
+        ),
+      ],
     );
   }
 }
 
-class _NoQrCard extends StatelessWidget {
-  const _NoQrCard({required this.ticket});
+class _NoQr extends StatelessWidget {
+  const _NoQr({required this.ticket});
 
   final Ticket ticket;
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final (icon, text) = ticket.isCancelled
         ? (Icons.cancel_outlined, 'This place was cancelled, so there is no ticket to show.')
         : (Icons.hourglass_top, "You're on the waitlist. A ticket appears here if a place opens up.");
-    return Container(
-      padding: const EdgeInsets.all(Spacing.x5),
-      decoration: BoxDecoration(
-        color: AppColors.neutralBg,
-        borderRadius: BorderRadius.circular(Radii.md),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 40, color: AppColors.faint),
-          const SizedBox(height: Spacing.x3),
-          Text(text, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.muted)),
-        ],
-      ),
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(color: p.surfaceTint, shape: BoxShape.circle),
+          child: Icon(icon, color: p.faint),
+        ),
+        const SizedBox(width: Spacing.x3),
+        Expanded(child: Text(text, style: AppType.small.copyWith(color: p.muted))),
+      ],
     );
   }
 }
@@ -250,17 +274,17 @@ class _Row extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: Spacing.x1),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 96,
-              child: Text(label, style: const TextStyle(color: AppColors.faint)),
-            ),
-            Expanded(child: Text(value)),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Spacing.x1),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 96, child: Text(label, style: AppType.small.copyWith(color: p.faint))),
+          Expanded(child: Text(value, style: AppType.small.copyWith(color: p.ink, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    );
+  }
 }

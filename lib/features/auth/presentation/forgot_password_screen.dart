@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/fake/fake_store.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/router/routes.dart';
@@ -59,9 +58,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: AppConfig.appName,
-      subtitle: 'Reset your password',
+      title: 'Reset your password',
+      subtitle: "We'll email you a link",
       showBack: true,
+      compact: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -12,8 +12,9 @@ import '../../../core/network/server_url.dart';
 import '../../../core/network/unauthorized_events.dart';
 import '../../../core/router/guards.dart';
 import '../../../core/router/routes.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/palette.dart';
 import '../../../core/theme/spacing.dart';
+import '../../../core/ui/pill_button.dart';
 import '../../shell/application/app_mode_controller.dart';
 import '../application/auth_controller.dart';
 import 'widgets/auth_scaffold.dart';
@@ -92,19 +93,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final showApple = social && (Platform.isIOS || apiMode == ApiMode.fake);
 
     return AuthScaffold(
-      title: AppConfig.appName,
-      subtitle: 'Sign in',
+      title: 'Welcome back',
+      subtitle: 'Sign in to your account',
       footer: TextButton(
         onPressed: _busy ? null : () => context.push(Routes.serverAddress),
         child: Text.rich(
           TextSpan(
             text: 'Server: ',
-            style: const TextStyle(color: AppColors.onNavy, fontSize: 13),
+            style: TextStyle(color: context.palette.muted, fontSize: 13),
             children: [
               TextSpan(
                 text: host,
-                style: const TextStyle(
-                  color: AppColors.gold,
+                style: TextStyle(
+                  color: context.palette.ink,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -153,25 +154,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               )
             else
               const SizedBox(height: Spacing.x4),
-            FilledButton(
+            PillButton(
+              label: _busy ? (waking ? 'Waking the server…' : 'Signing in…') : 'Sign in',
               onPressed: _busy ? null : _submit,
-              child: _busy
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.onNavy,
-                          ),
-                        ),
-                        const SizedBox(width: Spacing.x3),
-                        Text(waking ? 'Waking the server…' : 'Signing in…'),
-                      ],
-                    )
-                  : const Text('Sign in'),
+              loading: _busy && !waking,
             ),
             if (social) ...[
               const SizedBox(height: Spacing.x5),
@@ -207,14 +193,14 @@ class _OrDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Expanded(child: Divider()),
+        const Expanded(child: Divider()),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: Spacing.x3),
-          child: Text('or', style: TextStyle(color: AppColors.faint)),
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.x3),
+          child: Text('or', style: TextStyle(color: context.palette.faint)),
         ),
-        Expanded(child: Divider()),
+        const Expanded(child: Divider()),
       ],
     );
   }

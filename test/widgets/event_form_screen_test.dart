@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/fake/seed.dart';
 import 'package:thingstead/core/model/enums.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
 import 'package:thingstead/features/auth/application/auth_controller.dart';
 import 'package:thingstead/features/organizer/events/presentation/event_form_screen.dart';
 
@@ -15,9 +16,16 @@ void main() {
       .signInWithPassword(FakeAccounts.organizerEmail, FakeAccounts.password);
 
   Finder field(String label) => find.ancestor(
-        of: find.text(label),
-        matching: find.byType(TextField),
+        of: find.text(label, skipOffstage: false),
+        matching: find.byType(TextField, skipOffstage: false),
       );
+
+  /// Scrolls a built-but-offstage widget into view. Drags would start on a
+  /// text field and scroll it instead of the list, so use ensureVisible.
+  Future<void> reveal(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+  }
 
   testWidgets('a new event shows the draft note and validates before sending', (tester) async {
     final world = TestWorld();
@@ -27,15 +35,13 @@ void main() {
     expect(find.text('New event'), findsOneWidget);
     expect(find.textContaining('Events start as a draft'), findsOneWidget);
 
-    await tester.scrollUntilVisible(find.widgetWithText(FilledButton, 'Create event'), 200,
-        scrollable: find.byType(Scrollable).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Create event'));
+    await reveal(tester, find.byType(SwitchListTile, skipOffstage: false));
+    await reveal(tester, find.widgetWithText(PillButton, 'Create event', skipOffstage: false));
+    await tester.tap(find.widgetWithText(PillButton, 'Create event'));
     await tester.pumpAndSettle();
     expect(find.text('Pick a start date and time.'), findsOneWidget);
-    // The title is back up top; scroll to it (the list builds lazily).
-    await tester.scrollUntilVisible(find.text('Give the event a title.'), -200,
-        scrollable: find.byType(Scrollable).first);
+    // The title is back up top; scroll to it.
+    await reveal(tester, find.text('Give the event a title.', skipOffstage: false));
     expect(find.text('Give the event a title.'), findsOneWidget);
     expect(world.store.events.where((e) => e.title == ''), isEmpty);
   });
@@ -90,17 +96,17 @@ void main() {
     expect(find.text('Edit event'), findsOneWidget);
     expect(find.text('Founders Dinner'), findsOneWidget);
     expect(find.text('founders-dinner'), findsOneWidget);
-    expect(find.text('12'), findsOneWidget);
+    await tester.enterText(field('Title'), 'Founders Dinner 2026');
+    await reveal(tester, find.text('Asia/Manila', skipOffstage: false));
     expect(find.text('Asia/Manila'), findsOneWidget);
     expect(find.textContaining('7:00 PM'), findsOneWidget); // 11:00Z in Manila
+    await reveal(tester, find.byType(SwitchListTile, skipOffstage: false));
+    expect(find.text('12'), findsOneWidget);
     expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value, isTrue);
 
-    await tester.enterText(field('Title'), 'Founders Dinner 2026');
     await tester.enterText(field('Capacity'), '15');
-    await tester.scrollUntilVisible(find.widgetWithText(FilledButton, 'Save changes'), 200,
-        scrollable: find.byType(Scrollable).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
+    await reveal(tester, find.widgetWithText(PillButton, 'Save changes', skipOffstage: false));
+    await tester.tap(find.widgetWithText(PillButton, 'Save changes'));
     await tester.pumpAndSettle();
 
     final acme = world.store.tenantBySlug('acme')!;
@@ -121,11 +127,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await reveal(tester, find.byType(SwitchListTile, skipOffstage: false));
     await tester.enterText(field('Capacity'), '10'); // 40 already confirmed
-    await tester.scrollUntilVisible(find.widgetWithText(FilledButton, 'Save changes'), 200,
-        scrollable: find.byType(Scrollable).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
+    await reveal(tester, find.widgetWithText(PillButton, 'Save changes', skipOffstage: false));
+    await tester.tap(find.widgetWithText(PillButton, 'Save changes'));
     await tester.pumpAndSettle();
 
     expect(

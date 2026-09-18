@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/model/enums.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/time/app_time.dart';
 import '../../../../core/widgets/async_view.dart';
@@ -56,9 +56,9 @@ class ScanEntryScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(Spacing.x4),
             children: [
-              const Text(
+              Text(
                 'Which event are you checking people in for?',
-                style: TextStyle(color: AppColors.muted),
+                style: TextStyle(color: context.palette.muted),
               ),
               const SizedBox(height: Spacing.x3),
               if (scannable.isEmpty)
@@ -71,7 +71,7 @@ class ScanEntryScreen extends ConsumerWidget {
                 Card(
                   margin: const EdgeInsets.only(bottom: Spacing.x2),
                   child: ListTile(
-                    leading: const Icon(Icons.qr_code_scanner, color: AppColors.navy),
+                    leading: Icon(Icons.qr_code_scanner, color: context.palette.moss),
                     title: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w600)),
                     subtitle: Text(
                       '${AppTime.formatEventDate(e.startsAt, e.timezone)} · '

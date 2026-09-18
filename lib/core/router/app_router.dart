@@ -16,6 +16,8 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/verify_screen.dart';
+import '../../features/onboarding/application/onboarding_controller.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/organizer/attendees/presentation/attendees_screen.dart';
 import '../../features/organizer/checkin/presentation/needs_attention_screen.dart';
 import '../../features/organizer/events/presentation/event_detail_screen.dart';
@@ -28,11 +30,13 @@ import '../../features/organizer/settings/presentation/server_address_screen.dar
 import '../../features/organizer/settings/presentation/settings_screen.dart';
 import '../../features/organizer/team/presentation/team_screen.dart';
 import '../../features/shell/application/app_mode_controller.dart';
+import '../../features/shell/presentation/animated_branches.dart';
 import '../../features/shell/presentation/attendee_shell.dart';
 import '../../features/shell/presentation/organizer_shell.dart';
 import 'guards.dart';
 import 'router_refresh.dart';
 import 'routes.dart';
+import 'transitions.dart';
 
 part 'app_router.g.dart';
 
@@ -62,8 +66,15 @@ GoRouter appRouter(Ref ref) {
       uri: state.uri,
       auth: ref.read(authControllerProvider),
       mode: ref.read(appModeControllerProvider),
+      onboardingSeen: ref.read(onboardingSeenProvider),
     ),
     routes: [
+      GoRoute(
+        path: Routes.onboarding,
+        pageBuilder: (context, state) =>
+            fadeThroughPage(state: state, child: const OnboardingScreen()),
+      ),
+
       // ---- auth stack -------------------------------------------------------
       GoRoute(
         path: Routes.login,
@@ -99,9 +110,11 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // ---- attendee shell ---------------------------------------------------
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) =>
             AttendeeShell(navigationShell: navigationShell),
+        navigatorContainerBuilder: (context, shell, children) =>
+            AnimatedBranches(shell: shell, children: children),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -171,9 +184,11 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // ---- organizer shell --------------------------------------------------
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) =>
             OrganizerShell(navigationShell: navigationShell),
+        navigatorContainerBuilder: (context, shell, children) =>
+            AnimatedBranches(shell: shell, children: children),
         branches: [
           StatefulShellBranch(
             routes: [

@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_error.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
+import '../../../../core/ui/celebration.dart';
+import '../../../../core/ui/pill_button.dart';
+import '../../../../core/ui/sheets.dart';
 import '../../../../core/widgets/error_banner.dart';
 import '../../orgs/domain/public_org.dart';
 import '../application/register_controller.dart';
 import '../domain/register_result.dart';
 
-/// Name + confirm, then the outcome in place. Resolves to the result once
-/// the person dismisses the outcome (null if they backed out before
-/// submitting).
+/// Name + confirm, then the outcome in place with the celebration mark.
+/// Resolves to the result once the person dismisses the outcome (null if
+/// they backed out before submitting).
 Future<RegisterResult?> showRegisterSheet(
   BuildContext context, {
   required String org,
@@ -19,14 +23,10 @@ Future<RegisterResult?> showRegisterSheet(
   required String email,
   String? initialName,
 }) =>
-    showModalBottomSheet<RegisterResult>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-        child: RegisterSheet(org: org, event: event, email: email, initialName: initialName),
-      ),
+    showAppSheet<RegisterResult>(
+      context,
+      builder: (context) =>
+          RegisterSheet(org: org, event: event, email: email, initialName: initialName),
     );
 
 class RegisterSheet extends ConsumerStatefulWidget {
@@ -93,38 +93,35 @@ class _RegisterSheetState extends ConsumerState<RegisterSheet> {
   @override
   Widget build(BuildContext context) {
     final result = _result;
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.x4),
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
       child: result != null ? _Outcome(result: result) : _form(),
     );
   }
 
   Widget _form() {
+    final p = context.palette;
     final joinWaitlist = widget.event.isFull && widget.event.waitlistEnabled;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          joinWaitlist ? 'Join the waitlist' : 'Register',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
+        Text(joinWaitlist ? 'Join the waitlist' : 'Register', style: AppType.title.copyWith(color: p.ink)),
         const SizedBox(height: Spacing.x1),
-        Text(
-          widget.event.title,
-          style: const TextStyle(color: AppColors.muted),
-        ),
+        Text(widget.event.title, style: AppType.body.copyWith(color: p.muted)),
         if (joinWaitlist)
-          const Padding(
-            padding: EdgeInsets.only(top: Spacing.x2),
+          Padding(
+            padding: const EdgeInsets.only(top: Spacing.x2),
             child: Text(
               "This event is full — you'll be emailed if a place opens up.",
-              style: TextStyle(color: AppColors.warn),
+              style: AppType.small.copyWith(color: p.warn, fontWeight: FontWeight.w600),
             ),
           ),
         if (_error != null) ...[
           const SizedBox(height: Spacing.x3),
-          ErrorBanner(message: _error!),
+          ErrorBanner(message: _error!, margin: EdgeInsets.zero),
         ],
         const SizedBox(height: Spacing.x4),
         TextField(
@@ -143,19 +140,17 @@ class _RegisterSheetState extends ConsumerState<RegisterSheet> {
             helperText: 'Your ticket and updates go to your account email.',
             helperMaxLines: 2,
           ),
-          child: Text(widget.email, style: const TextStyle(color: AppColors.muted)),
+          child: Text(widget.email, style: AppType.body.copyWith(color: p.muted)),
         ),
-        const SizedBox(height: Spacing.x4),
-        FilledButton(
+        const SizedBox(height: Spacing.x5),
+        PillButton(
+          label: _busy
+              ? 'Signing you up…'
+              : joinWaitlist
+                  ? 'Join the waitlist'
+                  : 'Register',
+          loading: _busy,
           onPressed: _busy ? null : _submit,
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          child: Text(
-            _busy
-                ? 'Signing you up…'
-                : joinWaitlist
-                    ? 'Join the waitlist'
-                    : 'Register',
-          ),
         ),
       ],
     );
@@ -169,47 +164,36 @@ class _Outcome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final o = result.outcome;
-    final good = o == RegisterOutcome.confirmed;
-    final (icon, color, bg) = good
-        ? (Icons.check_circle_outline, AppColors.success, AppColors.successBg)
-        : (Icons.info_outline, AppColors.warn, AppColors.warnBg);
+    final (IconData? icon, Color color) = switch (o) {
+      RegisterOutcome.confirmed => (null, p.success),
+      RegisterOutcome.waitlisted => (Icons.hourglass_top, p.warn),
+      RegisterOutcome.duplicate => (Icons.confirmation_number_outlined, p.ink),
+      RegisterOutcome.full => (Icons.block, p.muted),
+      RegisterOutcome.closed => (Icons.lock_outline, p.muted),
+    };
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          padding: const EdgeInsets.all(Spacing.x4),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(Radii.md),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(width: Spacing.x3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      RegisterCopy.title(o),
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: color),
-                    ),
-                    const SizedBox(height: Spacing.x1),
-                    Text(RegisterCopy.body(o), style: const TextStyle(height: 1.4)),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        Center(child: Celebration(icon: icon, color: color)),
+        Text(
+          RegisterCopy.title(o),
+          textAlign: TextAlign.center,
+          style: AppType.title.copyWith(color: p.ink),
         ),
-        const SizedBox(height: Spacing.x4),
-        FilledButton(
+        const SizedBox(height: Spacing.x2),
+        Text(
+          RegisterCopy.body(o),
+          textAlign: TextAlign.center,
+          style: AppType.body.copyWith(color: p.muted),
+        ),
+        const SizedBox(height: Spacing.x5),
+        PillButton(
+          label: result.ticket != null ? 'View my ticket' : 'OK',
+          variant: result.ticket != null ? PillVariant.primary : PillVariant.strong,
           onPressed: () => Navigator.of(context).pop(result),
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          child: Text(result.ticket != null ? 'View my ticket' : 'OK'),
         ),
       ],
     );

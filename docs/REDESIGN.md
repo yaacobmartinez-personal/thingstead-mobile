@@ -198,6 +198,8 @@ Three pages, shown once (`Prefs.onboardingSeen`), reachable again from Account �
 
 ## 4. Implementation phases
 
+**Status (2026-09-19):** D0–D7 delivered in one pass (commit after `267ef77`). Left open: six illustrations still to generate when the Z-Image quota returns (`assets/illustrations/MANIFEST.md` lists them), golden screenshots (optional), and the hidden `/dev/styles` page, which was not built — the emulator walkthrough covered both themes instead.
+
 Each ends with `flutter analyze`, `flutter test`, an emulator pass in both themes, and a commit.
 
 **D0 — Foundations.** Tokens (`AppPalette` light/dark as a `ThemeExtension`), Manrope fonts, `AppTheme.light()/dark()` rebuilt (buttons pill, inputs filled, cards 24, nav, sheets, dialogs, snackbars), `ThemeMode` from an `AppearanceController` (prefs), `MotionSettings`, `flutter_animate` + `animations` added, a hidden `/dev/styles` screen that renders every token, type style, button, chip, and input in both themes for review on the emulator. Every existing screen already looks different after this step.
@@ -224,7 +226,7 @@ Roughly: D0 and D2 are the bulk of the engineering; D3–D5 are mostly compositi
 assets/fonts/Manrope-*.ttf                     new
 assets/illustrations/*.webp, MANIFEST.md       new
 lib/core/theme/{palette,app_theme,typography,motion,illustrations}.dart   rewritten/new
-lib/core/theme/{app_colors,status_chip}.dart   removed (replaced by palette + StatusPill)
+lib/core/theme/app_colors.dart                 removed (palette); status_chip.dart kept, rebuilt on the palette as the pill
 lib/core/ui/*.dart                             new component library (§1.5)
 lib/core/router/{app_router,transitions}.dart  page transitions, /onboarding, /dev/styles
 lib/features/onboarding/**                     new

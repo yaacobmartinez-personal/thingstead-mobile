@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/model/enums.dart';
 import '../../../../core/network/api_error.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/widgets/error_banner.dart';
 import '../domain/team.dart';
@@ -86,9 +86,9 @@ class _InviteSheetState extends State<InviteSheet> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: Spacing.x1),
-          const Text(
+          Text(
             "They'll get an email with a link that's valid for 7 days.",
-            style: TextStyle(color: AppColors.muted),
+            style: TextStyle(color: context.palette.muted),
           ),
           if (_error != null) ...[
             const SizedBox(height: Spacing.x3),

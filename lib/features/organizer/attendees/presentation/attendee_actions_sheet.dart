@@ -6,7 +6,7 @@ import '../../../../core/config/api_mode.dart';
 import '../../../../core/config/feature_availability.dart';
 import '../../../../core/model/enums.dart';
 import '../../../../core/network/api_error.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../events/domain/event_detail.dart';
@@ -99,13 +99,13 @@ class _ActionsSheet extends StatelessWidget {
                   style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                 ),
                 if (canCopy)
-                  Text(a.email!, style: const TextStyle(color: AppColors.muted)),
+                  Text(a.email!, style: TextStyle(color: context.palette.muted)),
               ],
             ),
           ),
           if (canPromote)
             ListTile(
-              leading: const Icon(Icons.arrow_upward, color: AppColors.success),
+              leading: Icon(Icons.arrow_upward, color: context.palette.success),
               title: const Text('Promote to confirmed'),
               subtitle: const Text('Give this person a place from the waitlist.'),
               onTap: () => Navigator.of(context).pop(_Action.promote),
@@ -118,17 +118,17 @@ class _ActionsSheet extends StatelessWidget {
             ),
           if (canErase)
             ListTile(
-              leading: const Icon(Icons.delete_forever_outlined, color: AppColors.danger),
-              title: const Text('Erase details', style: TextStyle(color: AppColors.danger)),
+              leading: Icon(Icons.delete_forever_outlined, color: context.palette.danger),
+              title: Text('Erase details', style: TextStyle(color: context.palette.danger)),
               subtitle: const Text('Remove their personal data for good.'),
               onTap: () => Navigator.of(context).pop(_Action.erase),
             ),
           if (!canPromote && !canCopy && !canErase)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(Spacing.x4),
               child: Text(
                 'Nothing to do for this registration.',
-                style: TextStyle(color: AppColors.muted),
+                style: TextStyle(color: context.palette.muted),
               ),
             ),
           const SizedBox(height: Spacing.x2),

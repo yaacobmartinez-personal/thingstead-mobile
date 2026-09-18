@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/model/enums.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/theme/status_chip.dart';
+import '../../../../core/theme/typography.dart';
 import '../../../../core/time/app_time.dart';
+import '../../../../core/ui/pill_button.dart';
+import '../../../../core/ui/stats.dart';
 import '../domain/event_summary.dart';
 
-/// Port of the Expo EventsScreen card: title + status, date in the event's
-/// zone, Confirmed x/cap, Checked in, and a "Scan check-in" button.
+/// Organizer event card: date tile, title + status, confirmed count, a
+/// check-in progress ring, and a "Scan" pill.
 class EventCard extends StatelessWidget {
   const EventCard({
     super.key,
@@ -29,88 +32,101 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final (label, tone) = statusChip(event.status);
-    return Card(
+    final (month, day, weekday, time) = AppTime.dateParts(event.startsAt, event.endsAt, event.timezone);
+    final ratio = event.confirmed == 0 ? 0.0 : event.checkedIn / event.confirmed;
+    return Material(
+      color: p.surface,
+      borderRadius: BorderRadius.circular(Radii.card),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(Radii.md),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(Spacing.x4),
+          padding: const EdgeInsets.all(Spacing.gutter),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      event.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                  Container(
+                    width: 56,
+                    padding: const EdgeInsets.symmetric(vertical: Spacing.x2),
+                    decoration: BoxDecoration(
+                      color: p.surfaceTint,
+                      borderRadius: BorderRadius.circular(Radii.md),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(month.toUpperCase(),
+                            style: AppType.caption.copyWith(color: p.muted, fontSize: 10)),
+                        Text(day, style: AppType.numeralSmall.copyWith(color: p.ink, height: 1.1)),
+                      ],
                     ),
                   ),
                   const SizedBox(width: Spacing.x3),
-                  StatusChip(label, tone: tone),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          event.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppType.heading.copyWith(color: p.ink, fontSize: 17),
+                        ),
+                        const SizedBox(height: 2),
+                        Text('$weekday · $time', style: AppType.small.copyWith(color: p.muted)),
+                        const SizedBox(height: Spacing.x2),
+                        StatusChip(label, tone: tone),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: Spacing.x2),
-              Text(
-                AppTime.formatEventDate(event.startsAt, event.timezone),
-                style: const TextStyle(color: AppColors.muted),
-              ),
-              const SizedBox(height: Spacing.x3),
+              const SizedBox(height: Spacing.x4),
               Row(
                 children: [
-                  _Stat(label: 'Confirmed', value: event.headcount),
-                  const SizedBox(width: Spacing.x6),
-                  _Stat(label: 'Checked in', value: '${event.checkedIn}', accent: true),
+                  ProgressRing(
+                    value: ratio,
+                    size: 44,
+                    child: Text(
+                      '${(ratio * 100).round()}%',
+                      style: AppType.caption.copyWith(color: p.ink, fontSize: 10),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.x3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${event.checkedIn} of ${event.confirmed} checked in',
+                          style: AppType.bodyStrong.copyWith(color: p.ink, fontSize: 14),
+                        ),
+                        Text(
+                          event.capacity == null
+                              ? '${event.confirmed} confirmed · no cap'
+                              : '${event.headcount} confirmed',
+                          style: AppType.small.copyWith(color: p.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PillButton(
+                    label: 'Scan',
+                    icon: Icons.qr_code_scanner,
+                    compact: true,
+                    expanded: false,
+                    onPressed: onScan,
+                  ),
                 ],
-              ),
-              const SizedBox(height: Spacing.x3),
-              FilledButton.icon(
-                onPressed: onScan,
-                icon: const Icon(Icons.qr_code_scanner, size: 20),
-                label: const Text('Scan check-in'),
-                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value, this.accent = false});
-
-  final String label;
-  final String value;
-  final bool accent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: accent ? AppColors.success : AppColors.navy,
-          ),
-        ),
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppColors.faint,
-            letterSpacing: 0.4,
-          ),
-        ),
-      ],
     );
   }
 }

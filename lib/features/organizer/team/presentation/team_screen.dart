@@ -6,9 +6,10 @@ import '../../../../core/config/api_mode.dart';
 import '../../../../core/config/feature_availability.dart';
 import '../../../../core/model/enums.dart';
 import '../../../../core/network/api_error.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/theme/status_chip.dart';
+import '../../../../core/ui/tiles.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -137,7 +138,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
           value: team,
           onRetry: () => ref.invalidate(provider),
           data: (page) => ListView(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x4, Spacing.x4, 96),
+            padding: const EdgeInsets.fromLTRB(Spacing.gutter, Spacing.x2, Spacing.gutter, 100),
             children: [
               _Heading('Members (${page.members.length})'),
               for (final m in page.members)
@@ -151,11 +152,11 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
               const SizedBox(height: Spacing.x4),
               _Heading('Pending invitations (${page.invitations.length})'),
               if (page.invitations.isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(vertical: Spacing.x2),
                   child: Text(
                     'No one is waiting to join.',
-                    style: TextStyle(color: AppColors.muted),
+                    style: TextStyle(color: context.palette.muted),
                   ),
                 ),
               for (final i in page.invitations)
@@ -182,10 +183,10 @@ class _Heading extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: Spacing.x2),
         child: Text(
           text.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: AppColors.faint,
+            color: context.palette.faint,
             letterSpacing: 0.6,
           ),
         ),
@@ -214,8 +215,10 @@ class _MemberTile extends StatelessWidget {
     final m = member;
     final canReduce = page.canReduceAdmin(m);
     return Card(
-      margin: const EdgeInsets.only(bottom: Spacing.x2),
+      margin: const EdgeInsets.only(bottom: Spacing.x3),
       child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x2, Spacing.x2, Spacing.x2),
+        leading: InitialsAvatar(name: m.displayName, size: 44),
         title: Row(
           children: [
             Flexible(
@@ -227,9 +230,9 @@ class _MemberTile extends StatelessWidget {
               ),
             ),
             if (m.isSelf)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: Spacing.x2),
-                child: Text('(you)', style: TextStyle(color: AppColors.muted)),
+                child: Text('(you)', style: TextStyle(color: context.palette.muted)),
               ),
           ],
         ),
@@ -242,7 +245,7 @@ class _MemberTile extends StatelessWidget {
               padding: const EdgeInsets.only(top: Spacing.x1),
               child: StatusChip(
                 RoleCopy.label(m.role),
-                tone: m.isAdmin ? ChipTone.navy : ChipTone.muted,
+                tone: m.isAdmin ? ChipTone.lime : ChipTone.muted,
               ),
             ),
           ],
@@ -304,14 +307,14 @@ class _MenuLabel extends StatelessWidget {
         children: [
           Text(
             text,
-            style: TextStyle(color: danger && enabled ? AppColors.danger : null),
+            style: TextStyle(color: danger && enabled ? context.palette.danger : null),
           ),
           if (hint != null)
             Padding(
               padding: const EdgeInsets.only(top: Spacing.x1),
               child: Text(
                 hint!,
-                style: const TextStyle(fontSize: 11, color: AppColors.faint, height: 1.3),
+                style: TextStyle(fontSize: 11, color: context.palette.faint, height: 1.3),
               ),
             ),
         ],
@@ -348,14 +351,14 @@ class _InvitationTile extends StatelessWidget {
               i.expired ? 'Expired $when' : 'Expires $when',
               style: TextStyle(
                 fontSize: 12,
-                color: i.expired ? AppColors.danger : AppColors.muted,
+                color: i.expired ? context.palette.danger : context.palette.muted,
               ),
             ),
           ],
         ),
         trailing: TextButton(
           onPressed: busy ? null : onRevoke,
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          style: TextButton.styleFrom(foregroundColor: context.palette.danger),
           child: const Text('Revoke'),
         ),
       ),

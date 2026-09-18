@@ -32,7 +32,7 @@ void main() {
     expect(find.byType(QrImageView), findsOneWidget);
     expect(find.text('Show this at the door.'), findsOneWidget);
     expect(find.text('Registered'), findsOneWidget);
-    expect(find.text('Acme Meetups'), findsOneWidget);
+    expect(find.text('ACME MEETUPS'), findsOneWidget);
     expect(find.text('Cancel my place'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Cancel my place'), 200,

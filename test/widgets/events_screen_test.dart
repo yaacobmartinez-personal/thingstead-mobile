@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/fake/seed.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
 import 'package:thingstead/features/auth/application/auth_controller.dart';
 import 'package:thingstead/features/organizer/events/presentation/events_screen.dart';
 import 'package:thingstead/features/organizer/orgs/application/selected_org_controller.dart';
@@ -22,9 +23,9 @@ void main() {
     expect(find.text('Closed'), findsOneWidget); // past event sorts first
     await tester.scrollUntilVisible(find.text('Draft'), 200);
     expect(find.text('Draft'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('40 / 40'), -200);
-    expect(find.text('40 / 40'), findsOneWidget); // full event headcount
-    expect(find.widgetWithText(FilledButton, 'Scan check-in'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('40 / 40 confirmed'), -200);
+    expect(find.text('40 / 40 confirmed'), findsOneWidget); // full event headcount
+    expect(find.widgetWithText(PillButton, 'Scan'), findsWidgets);
     expect(find.byIcon(Icons.swap_horiz), findsOneWidget); // two orgs → switcher
   });
 
@@ -41,7 +42,7 @@ void main() {
     expect(find.text('Beta Collective'), findsOneWidget);
     expect(find.text('Community Hackathon'), findsOneWidget);
     expect(find.text('Summer Meetup'), findsNothing);
-    expect(find.text('7'), findsOneWidget); // uncapped headcount is just the count
+    expect(find.text('7 confirmed · no cap'), findsOneWidget); // uncapped headcount
   });
 
   testWidgets('shows the empty state for an org with no events', (tester) async {

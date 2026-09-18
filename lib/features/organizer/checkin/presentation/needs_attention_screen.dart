@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/time/app_time.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -91,7 +91,7 @@ class _StatusCard extends StatelessWidget {
             for (final l in lines)
               Padding(
                 padding: const EdgeInsets.only(bottom: Spacing.x1),
-                child: Text(l, style: const TextStyle(color: AppColors.muted)),
+                child: Text(l, style: TextStyle(color: context.palette.muted)),
               ),
           ],
         ),
@@ -122,7 +122,7 @@ class _AttentionTile extends ConsumerWidget {
                 Icon(
                   op.kind == PendingKind.scan ? Icons.qr_code : Icons.touch_app_outlined,
                   size: 18,
-                  color: AppColors.danger,
+                  color: context.palette.danger,
                 ),
                 const SizedBox(width: Spacing.x2),
                 Expanded(
@@ -130,17 +130,17 @@ class _AttentionTile extends ConsumerWidget {
                 ),
                 Text(
                   AppTime.formatTime(op.clientAt),
-                  style: const TextStyle(color: AppColors.faint, fontSize: 12),
+                  style: TextStyle(color: context.palette.faint, fontSize: 12),
                 ),
               ],
             ),
             const SizedBox(height: Spacing.x1),
-            Text(op.whatHappened, style: const TextStyle(color: AppColors.muted)),
+            Text(op.whatHappened, style: TextStyle(color: context.palette.muted)),
             if (op.code != null && op.attendeeName == null) ...[
               const SizedBox(height: Spacing.x1),
               Text(
                 op.code!,
-                style: const TextStyle(color: AppColors.faint, fontSize: 12),
+                style: TextStyle(color: context.palette.faint, fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -159,7 +159,7 @@ class _AttentionTile extends ConsumerWidget {
                 const Spacer(),
                 TextButton(
                   onPressed: () => queue.dismiss(op.id),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                  style: TextButton.styleFrom(foregroundColor: context.palette.danger),
                   child: const Text('Dismiss'),
                 ),
               ],

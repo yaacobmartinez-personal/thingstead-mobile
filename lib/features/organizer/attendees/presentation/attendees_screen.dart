@@ -6,8 +6,10 @@ import '../../../../core/config/api_mode.dart';
 import '../../../../core/config/feature_availability.dart';
 import '../../../../core/network/api_error.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
+import '../../../../core/ui/round_icon_button.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../checkin/presentation/sync_badge.dart';
@@ -74,32 +76,30 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
       appBar: AppBar(
         title: Text(title),
         actions: [
-          TextButton.icon(
-            onPressed: () => context.push(
-              '${Routes.orgScanLive}?event=${Uri.encodeComponent(widget.eventSlug)}',
-            ),
-            style: TextButton.styleFrom(foregroundColor: AppColors.onNavy),
-            icon: const Icon(Icons.qr_code_scanner, size: 20),
-            label: const Text('Scan'),
-          ),
           if (canExport)
-            IconButton(
+            RoundIconButton(
+              icon: _exporting ? Icons.hourglass_top : Icons.download_outlined,
               tooltip: 'Export CSV',
               onPressed: _exporting || !state.hasValue ? null : () => _export(org.slug),
-              icon: _exporting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onNavy),
-                    )
-                  : const Icon(Icons.download_outlined),
             ),
+          const SizedBox(width: Spacing.x2),
+          Padding(
+            padding: const EdgeInsets.only(right: Spacing.gutter),
+            child: RoundIconButton(
+              icon: Icons.qr_code_scanner,
+              tooltip: 'Scan',
+              dark: true,
+              onPressed: () => context.push(
+                '${Routes.orgScanLive}?event=${Uri.encodeComponent(widget.eventSlug)}',
+              ),
+            ),
+          ),
         ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(Spacing.gutter, Spacing.x2, Spacing.gutter, Spacing.x2),
             child: TextField(
               controller: _query,
               onChanged: (_) => setState(() {}),
@@ -108,6 +108,20 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
               decoration: InputDecoration(
                 hintText: 'Search name or email',
                 prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: context.palette.surface,
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(999)),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(999)),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(Radius.circular(999)),
+                  borderSide: BorderSide(color: context.palette.limeDeep, width: 2),
+                ),
                 suffixIcon: _query.text.isEmpty
                     ? null
                     : IconButton(
@@ -120,14 +134,14 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
           ),
           if (state.hasValue)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.gutter),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       '${state.requireValue.checkedInCount} of '
                       '${state.requireValue.attendees.length} checked in',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                      style: AppType.small.copyWith(color: context.palette.muted),
                     ),
                   ),
                   const SyncBadge(),
@@ -136,20 +150,20 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
             ),
           if (state.value?.stale ?? false)
             Container(
-              margin: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x2, Spacing.x4, 0),
+              margin: const EdgeInsets.fromLTRB(Spacing.gutter, Spacing.x2, Spacing.gutter, 0),
               padding: const EdgeInsets.symmetric(horizontal: Spacing.x3, vertical: Spacing.x2),
               decoration: BoxDecoration(
-                color: AppColors.warnBg,
-                borderRadius: BorderRadius.circular(Radii.sm),
+                color: context.palette.warnBg,
+                borderRadius: BorderRadius.circular(Radii.md),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.cloud_off_outlined, size: 16, color: AppColors.warn),
+                  Icon(Icons.cloud_off_outlined, size: 16, color: context.palette.warn),
                   const SizedBox(width: Spacing.x2),
                   Expanded(
                     child: Text(
                       'Showing the saved list. Check-ins will sync when the server is reachable.',
-                      style: const TextStyle(color: AppColors.warn, fontSize: 12),
+                      style: AppType.small.copyWith(color: context.palette.warn, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -178,8 +192,9 @@ class _AttendeesScreenState extends ConsumerState<AttendeesScreen> {
                   }
                   return ListView.separated(
                     keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.fromLTRB(Spacing.gutter, Spacing.x2, Spacing.gutter, Spacing.x8),
                     itemCount: rows.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => const SizedBox(height: Spacing.x2),
                     itemBuilder: (context, i) {
                       final a = rows[i];
                       return AttendeeRow(

@@ -6,6 +6,7 @@ import 'core/connectivity/connectivity_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/router/deep_link_handler.dart';
 import 'core/theme/app_theme.dart';
+import 'features/settings/application/appearance_controller.dart';
 
 class ThingsteadApp extends ConsumerWidget {
   const ThingsteadApp({super.key});
@@ -21,6 +22,8 @@ class ThingsteadApp extends ConsumerWidget {
     return MaterialApp.router(
       title: AppConfig.appName,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ref.watch(appearanceControllerProvider),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

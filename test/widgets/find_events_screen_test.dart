@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
 import 'package:thingstead/features/attendee/orgs/application/recent_orgs_controller.dart';
 import 'package:thingstead/features/attendee/orgs/domain/public_org.dart';
 import 'package:thingstead/features/attendee/orgs/presentation/find_events_screen.dart';
@@ -13,12 +14,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('thingstead.pro/'), findsOneWidget, reason: 'prefix hint');
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Show events'));
+    await tester.tap(find.widgetWithText(PillButton, 'Show events'));
     await tester.pumpAndSettle();
     expect(find.text('Enter the organization code from your invitation.'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'Not A Code');
-    await tester.tap(find.widgetWithText(FilledButton, 'Show events'));
+    await tester.tap(find.widgetWithText(PillButton, 'Show events'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Codes are 3–63'), findsOneWidget);
 
@@ -32,7 +33,7 @@ void main() {
     await pumpApp(tester, const FindEventsScreen(), world: TestWorld());
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'https://thingstead.pro/acme/summer-meetup');
-    await tester.tap(find.widgetWithText(FilledButton, 'Show events'));
+    await tester.tap(find.widgetWithText(PillButton, 'Show events'));
     await tester.pumpAndSettle();
     expect(find.text('route:/a/events/orgs/acme/events/summer-meetup'), findsOneWidget);
   });
@@ -53,6 +54,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('RECENT'), findsOneWidget);
     expect(find.text('Beta Collective'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Beta Collective'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Beta Collective'));
     await tester.pumpAndSettle();
     expect(find.text('route:/a/events/orgs/beta'), findsOneWidget);

@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/fake/seed.dart';
 import 'package:thingstead/core/model/enums.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
+import 'package:thingstead/core/ui/slide_to_act.dart';
 import 'package:thingstead/features/attendee/orgs/application/recent_orgs_controller.dart';
 import 'package:thingstead/features/attendee/orgs/presentation/org_events_screen.dart';
 import 'package:thingstead/features/attendee/orgs/presentation/public_event_screen.dart';
@@ -45,9 +46,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Design Workshop'), findsOneWidget);
     expect(find.textContaining('Laptops recommended'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Register'), findsOneWidget);
+    expect(find.text('Swipe to register'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Register'));
+    await tester.longPress(find.byType(SlideToAct));
     await tester.pumpAndSettle();
     expect(find.textContaining('route:/auth/login?from=%2F'), findsOneWidget);
   });
@@ -62,13 +63,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Register'));
+    await tester.longPress(find.byType(SlideToAct));
     await tester.pumpAndSettle();
     expect(find.text('Your name'), findsOneWidget);
     expect(find.text('Door Staff'), findsOneWidget, reason: 'prefilled from the account');
     expect(find.text('door@acme.test'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Register').last);
+    await tester.tap(find.widgetWithText(PillButton, 'Register'));
     await tester.pumpAndSettle();
     expect(find.text("You're registered"), findsOneWidget);
     expect(find.text('View my ticket'), findsOneWidget);
@@ -89,12 +90,12 @@ void main() {
       setup: signIn,
     );
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(FilledButton, 'Join the waitlist'), findsOneWidget);
+    expect(find.text('Swipe to join the waitlist'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Join the waitlist'));
+    await tester.longPress(find.byType(SlideToAct));
     await tester.pumpAndSettle();
     expect(find.textContaining("you'll be emailed if a place opens up"), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Join the waitlist').last);
+    await tester.tap(find.widgetWithText(PillButton, 'Join the waitlist'));
     await tester.pumpAndSettle();
     expect(find.text("You're on the waitlist"), findsOneWidget);
   });
@@ -110,9 +111,8 @@ void main() {
       setup: signIn,
     );
     await tester.pumpAndSettle();
-    final button = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Full'));
-    expect(button.onPressed, isNull);
-    expect(find.text('All places have been taken.'), findsOneWidget);
+    expect(tester.widget<SlideToAct>(find.byType(SlideToAct)).enabled, isFalse);
+    expect(find.text('Full — no places left'), findsOneWidget);
   });
 
   testWidgets('a draft event is not open', (tester) async {

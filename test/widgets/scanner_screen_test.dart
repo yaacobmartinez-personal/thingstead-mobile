@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/fake/seed.dart';
 import 'package:thingstead/core/model/enums.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
 import 'package:thingstead/features/auth/application/auth_controller.dart';
 import 'package:thingstead/features/organizer/scanner/domain/scan_source.dart';
 import 'package:thingstead/features/organizer/scanner/presentation/scanner_screen.dart';
@@ -94,6 +94,6 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Not a valid ticket'), findsOneWidget);
-    expect(find.byType(FilledButton), findsOneWidget); // Scan next
+    expect(find.widgetWithText(PillButton, 'Scan next'), findsOneWidget);
   });
 }

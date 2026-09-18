@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/fake/seed.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
 import 'package:thingstead/features/auth/application/auth_controller.dart';
 import 'package:thingstead/features/auth/data/fake_auth_repository.dart';
 import 'package:thingstead/features/auth/presentation/login_screen.dart';
@@ -13,7 +14,7 @@ void main() {
 
   testWidgets('empty submit shows a validation message', (tester) async {
     await pumpApp(tester, const LoginScreen(), world: TestWorld());
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pump();
     expect(find.text('Enter your email and password.'), findsOneWidget);
   });
@@ -23,7 +24,7 @@ void main() {
     final c = await pumpApp(tester, const LoginScreen(), world: TestWorld());
     await tester.enterText(field('Email'), FakeAccounts.organizerEmail);
     await tester.enterText(field('Password'), 'wrong');
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pump(); // busy
     await tester.pump(); // resolved
     expect(find.text(FakeAuthRepository.wrongCredentials), findsOneWidget);
@@ -34,7 +35,7 @@ void main() {
     final c = await pumpApp(tester, const LoginScreen(), world: TestWorld());
     await tester.enterText(field('Email'), FakeAccounts.organizerEmail);
     await tester.enterText(field('Password'), FakeAccounts.password);
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pump();
     await tester.pump();
     expect(c.read(authControllerProvider).isSignedIn, isTrue);

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/model/enums.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/theme/status_chip.dart';
+import '../../../../core/ui/round_icon_button.dart';
+import '../../../../core/ui/tiles.dart';
 import '../../../auth/application/auth_controller.dart';
 import '../application/selected_org_controller.dart';
 import '../domain/org.dart';
@@ -22,12 +24,12 @@ class OrgList extends ConsumerWidget {
     final selected = ref.watch(selectedOrgProvider);
 
     if (orgs.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(Spacing.x6),
+      return Padding(
+        padding: const EdgeInsets.all(Spacing.x6),
         child: Text(
           'No organizations yet. Create one on the web, or ask an admin to invite you.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.muted),
+          style: TextStyle(color: context.palette.muted),
         ),
       );
     }
@@ -41,11 +43,7 @@ class OrgList extends ConsumerWidget {
         final org = orgs[i];
         final isCurrent = org.slug == selected?.slug;
         return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: isCurrent ? AppColors.navy : AppColors.neutralBg,
-            foregroundColor: isCurrent ? AppColors.onNavy : AppColors.navy,
-            child: Text(org.name.substring(0, 1).toUpperCase()),
-          ),
+          leading: InitialsAvatar(name: org.name, size: 40),
           title: Text(org.name, style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: Spacing.x1),
@@ -54,7 +52,7 @@ class OrgList extends ConsumerWidget {
               children: [
                 StatusChip(
                   org.isAdmin ? 'Admin' : 'Staff',
-                  tone: org.isAdmin ? ChipTone.navy : ChipTone.muted,
+                  tone: org.isAdmin ? ChipTone.lime : ChipTone.muted,
                 ),
                 if (org.plan != PlanTier.free)
                   StatusChip(
@@ -64,7 +62,7 @@ class OrgList extends ConsumerWidget {
               ],
             ),
           ),
-          trailing: isCurrent ? const Icon(Icons.check, color: AppColors.navy) : null,
+          trailing: isCurrent ? Icon(Icons.check_circle, color: context.palette.limeDeep) : null,
           onTap: () {
             ref.read(selectedOrgSlugProvider.notifier).set(org.slug);
             onPicked?.call(org);
@@ -104,9 +102,9 @@ class OrgSwitcherButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orgs = ref.watch(authControllerProvider.select((s) => s.orgs));
     if (orgs.length < 2) return const SizedBox.shrink();
-    return IconButton(
+    return RoundIconButton(
+      icon: Icons.swap_horiz,
       tooltip: 'Switch organization',
-      icon: const Icon(Icons.swap_horiz),
       onPressed: () => showOrgSwitcher(context),
     );
   }

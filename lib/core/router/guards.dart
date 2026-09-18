@@ -20,9 +20,16 @@ String? computeRedirect({
   required Uri uri,
   required AuthState auth,
   required AppMode mode,
+  bool onboardingSeen = true,
 }) {
   final path = uri.path;
   final signedIn = auth.isSignedIn;
+
+  // A fresh install opens on the intro; deep links and everything else
+  // skip it, and it never interrupts a signed-in person.
+  if (!onboardingSeen && !signedIn && path == AppMode.attendee.home) {
+    return Routes.onboarding;
+  }
 
   if (path.startsWith('/auth/')) {
     final tokenScreen = path == Routes.verify || path == Routes.reset;
@@ -40,14 +47,17 @@ String? computeRedirect({
     return deliberate ? AppMode.attendee.home : loginFor(uri);
   }
 
-  if (path.startsWith('/o')) {
+  if (isOrganizerPath(path)) {
     if (!auth.hasOrganizerAccess) return AppMode.attendee.home;
   }
   return null;
 }
 
+/// `/o` and everything under it — not `/onboarding`.
+bool isOrganizerPath(String path) => path == '/o' || path.startsWith('/o/');
+
 bool requiresSession(String path) =>
-    path.startsWith('/o') ||
+    isOrganizerPath(path) ||
     (path.startsWith('${Routes.attendeeTickets}/') && path != Routes.attendeeTickets);
 
 /// The login route that returns to [uri] afterwards.
@@ -60,7 +70,7 @@ String loginFor(Uri uri) =>
 String afterSignInTarget({required String? from, required AppMode mode}) {
   final safe = safeFrom(from);
   if (mode == AppMode.organizer) {
-    return safe != null && safe.startsWith('/o') ? safe : mode.home;
+    return safe != null && isOrganizerPath(safe) ? safe : mode.home;
   }
   return safe ?? AppMode.attendee.home;
 }

@@ -16,6 +16,7 @@ import 'package:thingstead/core/storage/boot_data.dart';
 import 'package:thingstead/core/storage/db/app_database.dart';
 import 'package:thingstead/core/storage/prefs.dart';
 import 'package:thingstead/core/storage/secure_store.dart';
+import 'package:thingstead/core/theme/motion.dart';
 import 'package:thingstead/core/time/clock.dart';
 
 /// Secure storage that never touches the platform.
@@ -67,7 +68,7 @@ final testNow = DateTime.utc(2026, 9, 18, 12);
 /// store, in-memory storage, and a pinned clock.
 class TestWorld {
   TestWorld({
-    BootData boot = BootData.empty,
+    BootData boot = const BootData(onboardingSeen: true),
     DateTime? now,
     bool online = true,
     FakeLatency latency = FakeLatency.none,
@@ -95,6 +96,8 @@ class TestWorld {
       secureStoreProvider.overrideWithValue(secure),
       prefsProvider.overrideWithValue(prefs),
       bootDataProvider.overrideWithValue(boot),
+      // Looping animations would keep pumpAndSettle waiting forever.
+      motionSettingsProvider.overrideWith(ReducedMotion.new),
     ];
   }
 
@@ -125,4 +128,10 @@ class TestWorld {
     });
     return c;
   }
+}
+
+/// Reduced motion for tests: no loops, no decorative animation.
+class ReducedMotion extends MotionSettings {
+  @override
+  bool build() => false;
 }

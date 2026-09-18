@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_config.dart';
 import '../../../../core/network/server_url.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/section_card.dart';
@@ -96,9 +96,9 @@ class _ServerAddressScreenState extends ConsumerState<ServerAddressScreen> {
                 ),
               ),
               if (_saved && !invalid)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: Spacing.x3),
-                  child: Text('Saved.', style: TextStyle(color: AppColors.success)),
+                  child: Text('Saved.', style: TextStyle(color: context.palette.success)),
                 ),
               const SizedBox(height: Spacing.x4),
               FilledButton(
@@ -119,7 +119,7 @@ class _ServerAddressScreenState extends ConsumerState<ServerAddressScreen> {
               const SizedBox(height: Spacing.x3),
               Text(
                 'Will save as: $normalized',
-                style: const TextStyle(fontSize: 12, color: AppColors.faint),
+                style: TextStyle(fontSize: 12, color: context.palette.faint),
               ),
             ],
           ),

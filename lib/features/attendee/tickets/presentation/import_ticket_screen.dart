@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_error.dart';
 import '../../../../core/router/deep_link_parser.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/widgets/error_banner.dart';
 import '../../../../core/widgets/section_card.dart';
@@ -134,10 +134,10 @@ class _ImportTicketScreenState extends ConsumerState<ImportTicketScreen> {
               ),
               if (_mismatch) ...[
                 const SizedBox(height: Spacing.x2),
-                const Text(
+                Text(
                   'Tip: sign out from Account, then sign in with the address the '
                   'confirmation was sent to.',
-                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                  style: TextStyle(color: context.palette.muted, fontSize: 13),
                 ),
               ],
             ],

@@ -2,6 +2,7 @@
 /// handler never disagree about where things live.
 abstract final class Routes {
   static const splash = '/splash';
+  static const onboarding = '/onboarding';
 
   // Auth stack
   static const login = '/auth/login';

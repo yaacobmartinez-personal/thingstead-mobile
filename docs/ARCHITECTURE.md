@@ -126,3 +126,48 @@ Everything attendee-side is behind `Feature.attendeeMode` (API-CONTRACT
   declarative `go` builds the full back stack. Flutter's built-in deep
   linking is disabled on both platforms. Cold-start links wait for the boot
   session check so organizer-only links (check-in) route correctly.
+
+## Design system (Phase D)
+
+The plan and its rationale are in `docs/REDESIGN.md`; this is the map.
+
+- **Tokens.** `AppPalette` (`lib/core/theme/palette.dart`) is a
+  `ThemeExtension` with one instance per brightness. Widgets read colors as
+  `context.palette.x`, never as constants, so a screen is theme-correct
+  without knowing which theme is active. Lime always carries `onLime` (ink);
+  `strong` is ink on light and pale on dark. Avatars use fixed pale tones
+  because their initials are always ink.
+- **Type.** `AppType` (`typography.dart`) is the Manrope scale. Styles set
+  both `fontWeight` and `fontVariations` because the bundled font is a
+  variable TTF.
+- **Theme.** `AppTheme.light()/dark()` (`app_theme.dart`) derive every
+  Material component theme from the palette; `AppearanceController`
+  (`features/settings/application/`) persists the `ThemeMode`.
+- **Motion.** `Motion` (`motion.dart`) holds the durations and curves.
+  `motionSettingsProvider` is false under `MediaQuery.disableAnimations` or
+  reduce-motion, and every loop or decorative entrance checks it — which is
+  also what keeps `pumpAndSettle` from hanging in tests (`TestWorld`
+  overrides it to reduced). Route transitions live in
+  `core/router/transitions.dart`; tab switches cross-fade through
+  `AnimatedBranches` (`features/shell/presentation/`), whose `TickerMode`
+  sits *inside* the fade so an inactive branch cannot freeze it.
+- **Components.** `lib/core/ui/` — `HeroScaffold` (parallax image, scrim,
+  sage sheet, floating round buttons, optional `BottomActionBar`),
+  `PillButton`, `RoundIconButton` (40 px disc in a 48 px target),
+  `SlideToAct` (drag, long-press, or semantics tap), `TicketCard`
+  (perforated stub), `AppBottomNav`, `IconTile`/`DateTile`/`InitialsAvatar`/
+  `AvatarStack`, `StatCounter`/`ProgressRing`, `Skeleton`, `Enter`/
+  `StaggeredColumn`, `Celebration`, `showAppSheet`.
+- **Illustrations.** `Illustrations` (`theme/illustrations.dart`) names the
+  assets; `assets/illustrations/MANIFEST.md` records the style prompt and
+  seed for each so any one can be regenerated. Event heroes are picked by
+  slug hash so an event keeps its picture.
+- **Onboarding.** `features/onboarding/` shows three pages once
+  (`onboardingSeen` pref); the router sends a signed-out first launch of the
+  attendee home there.
+
+Testing notes that follow from the above: the Ahem test font is wide, so
+chips and labels ellipsize (`Flexible` text); lazily built list items are
+offstage until revealed, so widget tests use
+`tester.ensureVisible(find.x(skipOffstage: false))` rather than
+`scrollUntilVisible` (whose drags can start on a text field).

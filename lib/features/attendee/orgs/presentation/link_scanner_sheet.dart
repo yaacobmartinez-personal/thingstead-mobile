@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../core/router/deep_link_parser.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 
 /// Full-screen camera that reads a Thingstead link QR (an org or event page)
@@ -79,7 +79,7 @@ class _LinkScannerScreenState extends State<_LinkScannerScreen> {
                   width: 240,
                   height: 240,
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.gold, width: 3),
+                    border: Border.all(color: context.palette.lime, width: 3),
                     borderRadius: BorderRadius.circular(Radii.lg),
                   ),
                 ),
@@ -90,7 +90,7 @@ class _LinkScannerScreenState extends State<_LinkScannerScreen> {
                     _hint ?? 'Point the camera at a Thingstead link QR',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: _hint == null ? Colors.white : AppColors.gold,
+                      color: _hint == null ? Colors.white : context.palette.lime,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),

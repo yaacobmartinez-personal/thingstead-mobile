@@ -18,6 +18,8 @@ class BootData {
     this.serverUrl,
     this.appMode,
     this.selectedOrgSlug,
+    this.appearance,
+    this.onboardingSeen = false,
   });
 
   static const empty = BootData();
@@ -28,6 +30,10 @@ class BootData {
   final String? serverUrl;
   final String? appMode;
   final String? selectedOrgSlug;
+
+  /// 'system' | 'light' | 'dark'; null = system.
+  final String? appearance;
+  final bool onboardingSeen;
 
   static Future<BootData> load(SecureStore secure, Prefs prefs) async {
     final token = await secure.read(SecureStore.keyToken);
@@ -60,6 +66,8 @@ class BootData {
       serverUrl: await secure.read(SecureStore.keyServerUrl),
       appMode: await prefs.getString(Prefs.keyAppMode),
       selectedOrgSlug: await prefs.getString(Prefs.keySelectedOrg),
+      appearance: await prefs.getString(Prefs.keyAppearance),
+      onboardingSeen: (await prefs.getString(Prefs.keyOnboardingSeen)) == 'true',
     );
   }
 }

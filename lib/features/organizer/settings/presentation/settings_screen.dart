@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/model/enums.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/theme/status_chip.dart';
 import '../../../../core/widgets/section_card.dart';
 import '../../../auth/presentation/widgets/session_tiles.dart';
+import '../../../settings/presentation/appearance_tile.dart';
 import '../../../shell/application/app_mode_controller.dart';
 import '../../../shell/presentation/mode_switch_tile.dart';
 import '../../orgs/application/selected_org_controller.dart';
@@ -23,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.all(Spacing.x4),
+        padding: const EdgeInsets.fromLTRB(Spacing.gutter, Spacing.x2, Spacing.gutter, Spacing.x8),
         children: [
           const SignedInCard(),
           if (org != null) ...[
@@ -38,7 +39,7 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: Spacing.x1),
                 Text(
                   'thingstead.pro/${org.slug}',
-                  style: const TextStyle(color: AppColors.muted),
+                  style: TextStyle(color: context.palette.muted),
                 ),
                 const SizedBox(height: Spacing.x3),
                 Wrap(
@@ -46,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
                   children: [
                     StatusChip(
                       org.isAdmin ? 'Admin' : 'Staff',
-                      tone: org.isAdmin ? ChipTone.navy : ChipTone.muted,
+                      tone: org.isAdmin ? ChipTone.lime : ChipTone.muted,
                     ),
                     StatusChip(
                       switch (org.plan) {
@@ -63,6 +64,8 @@ class SettingsScreen extends ConsumerWidget {
           ],
           const SizedBox(height: Spacing.x4),
           const Card(child: ModeSwitchTile(target: AppMode.attendee)),
+          const SizedBox(height: Spacing.x4),
+          const AppearanceCard(),
           const SizedBox(height: Spacing.x4),
           const Card(
             child: Column(

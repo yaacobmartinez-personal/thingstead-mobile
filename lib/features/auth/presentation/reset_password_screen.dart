@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/theme/spacing.dart';
 import '../../shell/application/app_mode_controller.dart';
@@ -72,9 +71,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: AppConfig.appName,
-      subtitle: 'Choose a new password',
+      title: 'Choose a new password',
+      subtitle: 'Make it a good one',
       showBack: true,
+      compact: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

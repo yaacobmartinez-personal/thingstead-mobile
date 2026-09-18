@@ -7,9 +7,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/network/api_error.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
 import '../../../../core/time/app_time.dart';
+import '../../../../core/ui/pill_button.dart';
 import '../../../../core/util/slugify.dart';
 import '../../../../core/widgets/async_view.dart';
 import '../../../../core/widgets/error_banner.dart';
@@ -57,7 +59,11 @@ class EventFormScreen extends ConsumerWidget {
 }
 
 class _EventForm extends ConsumerStatefulWidget {
-  const _EventForm({required this.org, required this.publicHost, this.existing});
+  const _EventForm({
+    required this.org,
+    required this.publicHost,
+    this.existing,
+  });
 
   final String org;
   final String publicHost;
@@ -70,10 +76,12 @@ class _EventForm extends ConsumerStatefulWidget {
 class _EventFormState extends ConsumerState<_EventForm> {
   late final _title = TextEditingController(text: widget.existing?.title ?? '');
   late final _slug = TextEditingController(text: widget.existing?.slug ?? '');
-  late final _description =
-      TextEditingController(text: widget.existing?.description ?? '');
-  late final _capacity =
-      TextEditingController(text: widget.existing?.capacity?.toString() ?? '');
+  late final _description = TextEditingController(
+    text: widget.existing?.description ?? '',
+  );
+  late final _capacity = TextEditingController(
+    text: widget.existing?.capacity?.toString() ?? '',
+  );
 
   /// Once the user touches the slug it stops following the title.
   late bool _slugEdited = widget.existing != null;
@@ -115,15 +123,17 @@ class _EventFormState extends ConsumerState<_EventForm> {
   }
 
   EventInput _input() => EventInput(
-        title: _title.text,
-        slug: _slug.text,
-        description: _description.text,
-        startsAt: _startsAt ?? '',
-        endsAt: _endsAt,
-        timezone: _timezone,
-        capacity: _capacity.text.trim().isEmpty ? null : int.tryParse(_capacity.text.trim()),
-        waitlistEnabled: _waitlist,
-      );
+    title: _title.text,
+    slug: _slug.text,
+    description: _description.text,
+    startsAt: _startsAt ?? '',
+    endsAt: _endsAt,
+    timezone: _timezone,
+    capacity: _capacity.text.trim().isEmpty
+        ? null
+        : int.tryParse(_capacity.text.trim()),
+    waitlistEnabled: _waitlist,
+  );
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
@@ -153,9 +163,13 @@ class _EventFormState extends ConsumerState<_EventForm> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text(existing == null ? 'Event created as a draft.' : 'Event saved.'),
-        ));
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              existing == null ? 'Event created as a draft.' : 'Event saved.',
+            ),
+          ),
+        );
       if (existing != null && existing.slug == event.slug) {
         context.pop();
       } else {
@@ -178,20 +192,27 @@ class _EventFormState extends ConsumerState<_EventForm> {
 
   @override
   Widget build(BuildContext context) {
-    final previewSlug = _slug.text.isNotEmpty ? _slug.text : slugify(_title.text);
+    final previewSlug = _slug.text.isNotEmpty
+        ? _slug.text
+        : slugify(_title.text);
     return Scaffold(
       appBar: AppBar(title: Text(_isEdit ? 'Edit event' : 'New event')),
       body: ListView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.all(Spacing.x4),
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.gutter,
+          Spacing.x2,
+          Spacing.gutter,
+          Spacing.x8,
+        ),
         children: [
           if (!_isEdit)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: Spacing.x4),
               child: Text(
                 "Events start as a draft. Publish when you're ready to take "
                 'registrations.',
-                style: TextStyle(color: AppColors.muted),
+                style: TextStyle(color: context.palette.muted),
               ),
             ),
           if (_error != null)
@@ -199,129 +220,149 @@ class _EventFormState extends ConsumerState<_EventForm> {
               padding: const EdgeInsets.only(bottom: Spacing.x3),
               child: ErrorBanner(message: _error!),
             ),
-          TextField(
-            controller: _title,
-            enabled: !_busy,
-            textCapitalization: TextCapitalization.sentences,
-            textInputAction: TextInputAction.next,
-            maxLength: EventInput.maxTitle,
-            onChanged: _onTitleChanged,
-            decoration: InputDecoration(
-              labelText: 'Title',
-              hintText: 'Summer Meetup',
-              counterText: '',
-              errorText: _fieldErrors['title'],
-              errorMaxLines: 3,
-            ),
-          ),
-          const SizedBox(height: Spacing.x3),
-          TextField(
-            controller: _slug,
-            enabled: !_busy,
-            autocorrect: false,
-            textInputAction: TextInputAction.next,
-            onChanged: _onSlugChanged,
-            decoration: InputDecoration(
-              labelText: 'Link',
-              hintText: 'summer-meetup',
-              helperText: '${widget.publicHost}/${previewSlug.isEmpty ? '…' : previewSlug}',
-              helperMaxLines: 2,
-              errorText: _fieldErrors['slug'],
-              errorMaxLines: 3,
-            ),
-          ),
-          const SizedBox(height: Spacing.x3),
-          TextField(
-            controller: _description,
-            enabled: !_busy,
-            textCapitalization: TextCapitalization.sentences,
-            minLines: 3,
-            maxLines: 8,
-            maxLength: EventInput.maxDescription,
-            decoration: InputDecoration(
-              labelText: 'Description',
-              hintText: 'What should people know before they sign up?',
-              alignLabelWithHint: true,
-              counterText: '',
-              errorText: _fieldErrors['description'],
-              errorMaxLines: 3,
-            ),
-          ),
-          const SizedBox(height: Spacing.x4),
-          _DateTimeField(
-            label: 'Starts',
-            value: _startsAt,
-            enabled: !_busy,
-            errorText: _fieldErrors['startsAt'],
-            onChanged: (v) => setState(() => _startsAt = v),
-          ),
-          const SizedBox(height: Spacing.x3),
-          _DateTimeField(
-            label: 'Ends (optional)',
-            value: _endsAt,
-            enabled: !_busy,
-            clearable: true,
-            errorText: _fieldErrors['endsAt'],
-            onChanged: (v) => setState(() => _endsAt = v),
-          ),
-          const SizedBox(height: Spacing.x3),
-          InkWell(
-            borderRadius: BorderRadius.circular(Radii.sm),
-            onTap: _busy
-                ? null
-                : () async {
-                    final zone = await showTimezonePicker(context, selected: _timezone);
-                    if (zone != null && mounted) setState(() => _timezone = zone);
-                  },
-            child: InputDecorator(
-              decoration: InputDecoration(
-                labelText: 'Timezone',
-                helperText: 'The times above are local to the event. Everyone sees them '
-                    'in this timezone, wherever they are.',
-                helperMaxLines: 3,
-                errorText: _fieldErrors['timezone'],
-                errorMaxLines: 3,
-                suffixIcon: const Icon(Icons.unfold_more),
+          _Group(
+            title: 'Basics',
+            children: [
+              TextField(
+                controller: _title,
+                enabled: !_busy,
+                textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.next,
+                maxLength: EventInput.maxTitle,
+                onChanged: _onTitleChanged,
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  hintText: 'Summer Meetup',
+                  counterText: '',
+                  errorText: _fieldErrors['title'],
+                  errorMaxLines: 3,
+                ),
               ),
-              child: Text(_timezone.replaceAll('_', ' ')),
-            ),
+              const SizedBox(height: Spacing.x3),
+              TextField(
+                controller: _slug,
+                enabled: !_busy,
+                autocorrect: false,
+                textInputAction: TextInputAction.next,
+                onChanged: _onSlugChanged,
+                decoration: InputDecoration(
+                  labelText: 'Link',
+                  hintText: 'summer-meetup',
+                  helperText:
+                      '${widget.publicHost}/${previewSlug.isEmpty ? '…' : previewSlug}',
+                  helperMaxLines: 2,
+                  errorText: _fieldErrors['slug'],
+                  errorMaxLines: 3,
+                ),
+              ),
+              const SizedBox(height: Spacing.x3),
+              TextField(
+                controller: _description,
+                enabled: !_busy,
+                textCapitalization: TextCapitalization.sentences,
+                minLines: 3,
+                maxLines: 8,
+                maxLength: EventInput.maxDescription,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'What should people know before they sign up?',
+                  alignLabelWithHint: true,
+                  counterText: '',
+                  errorText: _fieldErrors['description'],
+                  errorMaxLines: 3,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: Spacing.x4),
-          TextField(
-            controller: _capacity,
-            enabled: !_busy,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              labelText: 'Capacity',
-              hintText: 'Leave empty for no limit',
-              errorText: _fieldErrors['capacity'],
-              errorMaxLines: 3,
-            ),
-          ),
-          const SizedBox(height: Spacing.x2),
-          SwitchListTile(
-            value: _waitlist,
-            onChanged: _busy ? null : (v) => setState(() => _waitlist = v),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Waitlist'),
-            subtitle: const Text(
-              'When the event is full, extra sign-ups join a waitlist instead of '
-              'being turned away.',
-            ),
+          _Group(
+            title: 'When',
+            children: [
+              _DateTimeField(
+                label: 'Starts',
+                value: _startsAt,
+                enabled: !_busy,
+                errorText: _fieldErrors['startsAt'],
+                onChanged: (v) => setState(() => _startsAt = v),
+              ),
+              const SizedBox(height: Spacing.x3),
+              _DateTimeField(
+                label: 'Ends (optional)',
+                value: _endsAt,
+                enabled: !_busy,
+                clearable: true,
+                errorText: _fieldErrors['endsAt'],
+                onChanged: (v) => setState(() => _endsAt = v),
+              ),
+              const SizedBox(height: Spacing.x3),
+              InkWell(
+                borderRadius: BorderRadius.circular(Radii.sm),
+                onTap: _busy
+                    ? null
+                    : () async {
+                        final zone = await showTimezonePicker(
+                          context,
+                          selected: _timezone,
+                        );
+                        if (zone != null && mounted) {
+                          setState(() => _timezone = zone);
+                        }
+                      },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Timezone',
+                    helperText:
+                        'The times above are local to the event. Everyone sees them '
+                        'in this timezone, wherever they are.',
+                    helperMaxLines: 3,
+                    errorText: _fieldErrors['timezone'],
+                    errorMaxLines: 3,
+                    suffixIcon: const Icon(Icons.unfold_more),
+                  ),
+                  child: Text(_timezone.replaceAll('_', ' ')),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: Spacing.x4),
-          FilledButton(
+          _Group(
+            title: 'Places',
+            children: [
+              TextField(
+                controller: _capacity,
+                enabled: !_busy,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  labelText: 'Capacity',
+                  hintText: 'Leave empty for no limit',
+                  errorText: _fieldErrors['capacity'],
+                  errorMaxLines: 3,
+                ),
+              ),
+              const SizedBox(height: Spacing.x2),
+              SwitchListTile(
+                value: _waitlist,
+                onChanged: _busy ? null : (v) => setState(() => _waitlist = v),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Waitlist'),
+                subtitle: const Text(
+                  'When the event is full, extra sign-ups join a waitlist instead of '
+                  'being turned away.',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.x5),
+          PillButton(
+            label: _busy
+                ? 'Saving…'
+                : _isEdit
+                ? 'Save changes'
+                : 'Create event',
+            loading: _busy,
             onPressed: _busy ? null : _submit,
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            child: Text(
-              _busy
-                  ? 'Saving…'
-                  : _isEdit
-                      ? 'Save changes'
-                      : 'Create event',
-            ),
           ),
           const SizedBox(height: Spacing.x2),
           TextButton(
@@ -394,7 +435,9 @@ class _DateTimeField extends StatelessWidget {
       initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
     );
     if (time == null) return;
-    onChanged(format(DateTime(date.year, date.month, date.day, time.hour, time.minute)));
+    onChanged(
+      format(DateTime(date.year, date.month, date.day, time.hour, time.minute)),
+    );
   }
 
   /// Tomorrow at 18:00 — a sensible first suggestion for a new event.
@@ -425,7 +468,40 @@ class _DateTimeField extends StatelessWidget {
         isEmpty: v == null,
         child: Text(
           v == null ? '' : display(v),
-          style: TextStyle(color: v == null ? AppColors.faint : AppColors.text),
+          style: TextStyle(
+            color: v == null ? context.palette.faint : context.palette.ink,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A white card grouping related fields under a small heading.
+class _Group extends StatelessWidget {
+  const _Group({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Material(
+      color: p.surface,
+      borderRadius: BorderRadius.circular(Radii.card),
+      child: Padding(
+        padding: const EdgeInsets.all(Spacing.gutter),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title.toUpperCase(),
+              style: AppType.caption.copyWith(color: p.faint),
+            ),
+            const SizedBox(height: Spacing.x3),
+            ...children,
+          ],
         ),
       ),
     );

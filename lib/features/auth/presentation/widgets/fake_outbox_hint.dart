@@ -5,7 +5,7 @@ import '../../../../core/config/api_mode.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/fake/fake_providers.dart';
 import '../../../../core/fake/fake_store.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 
 /// Fake mode has no inbox, so the token the "email" would carry is shown
@@ -36,20 +36,20 @@ class FakeOutboxHint extends ConsumerWidget {
       margin: const EdgeInsets.only(top: Spacing.x4),
       padding: const EdgeInsets.all(Spacing.x3),
       decoration: BoxDecoration(
-        color: AppColors.warnBg,
+        color: context.palette.warnBg,
         borderRadius: BorderRadius.circular(Radii.sm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Fake mode inbox',
-            style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.warn),
+            style: TextStyle(fontWeight: FontWeight.w700, color: context.palette.warn),
           ),
           const SizedBox(height: Spacing.x1),
           Text(
             'To ${mail.to}: token ${mail.token}',
-            style: const TextStyle(color: AppColors.warn, fontSize: 13),
+            style: TextStyle(color: context.palette.warn, fontSize: 13),
           ),
           Align(
             alignment: Alignment.centerRight,

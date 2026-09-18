@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/theme/spacing.dart';
@@ -75,9 +74,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: AppConfig.appName,
-      subtitle: 'Create your account',
+      title: 'Create your account',
+      subtitle: 'Join in a minute',
       showBack: true,
+      compact: true,
       child: AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

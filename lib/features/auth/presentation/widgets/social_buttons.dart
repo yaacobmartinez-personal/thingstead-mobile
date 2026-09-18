@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
 
 /// "Continue with Google" and, on iOS, "Continue with Apple" (Apple's rule
-/// 4.8: offering any other social login means offering theirs too).
+/// 4.8: offering any other social login means offering theirs too). Ghost
+/// pills on the white card, so they sit on a tinted fill.
 class SocialButtons extends StatelessWidget {
   const SocialButtons({
     super.key,
@@ -21,11 +23,13 @@ class SocialButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         OutlinedButton.icon(
           onPressed: busy ? null : onGoogle,
+          style: OutlinedButton.styleFrom(backgroundColor: p.surfaceTint),
           icon: const _GoogleMark(),
           label: const Text('Continue with Google'),
         ),
@@ -34,8 +38,8 @@ class SocialButtons extends StatelessWidget {
           FilledButton.icon(
             onPressed: busy ? null : onApple,
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
+              backgroundColor: p.strong,
+              foregroundColor: p.onInk,
             ),
             icon: const Icon(Icons.apple, size: 22),
             label: const Text('Continue with Apple'),
@@ -46,8 +50,8 @@ class SocialButtons extends StatelessWidget {
   }
 }
 
-/// A simple four-colour "G" so the button reads as Google without shipping
-/// the official asset.
+/// A simple "G" so the button reads as Google without shipping the official
+/// asset.
 class _GoogleMark extends StatelessWidget {
   const _GoogleMark();
 
@@ -57,18 +61,10 @@ class _GoogleMark extends StatelessWidget {
       width: 22,
       height: 22,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.border),
-        color: Colors.white,
-      ),
-      child: const Text(
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+      child: Text(
         'G',
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF4285F4),
-        ),
+        style: AppType.label.copyWith(fontSize: 13, color: const Color(0xFF4285F4)),
       ),
     );
   }

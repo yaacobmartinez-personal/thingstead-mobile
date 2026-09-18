@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/time/app_time.dart';
 
@@ -71,9 +71,9 @@ class _TimezonePickerSheetState extends State<_TimezonePickerSheet> {
           ),
           Expanded(
             child: matches.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text('No timezone matches that.',
-                        style: TextStyle(color: AppColors.muted)),
+                        style: TextStyle(color: context.palette.muted)),
                   )
                 : ListView.builder(
                     controller: controller,
@@ -88,10 +88,10 @@ class _TimezonePickerSheetState extends State<_TimezonePickerSheet> {
                         title: Text(zone.replaceAll('_', ' ')),
                         trailing: Text(
                           AppTime.zoneLabel(now, zone),
-                          style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                          style: TextStyle(color: context.palette.muted, fontSize: 12),
                         ),
                         leading: isSelected
-                            ? const Icon(Icons.check, color: AppColors.navy)
+                            ? Icon(Icons.check, color: context.palette.moss)
                             : const SizedBox(width: 24),
                         onTap: () => Navigator.of(context).pop(zone),
                       );

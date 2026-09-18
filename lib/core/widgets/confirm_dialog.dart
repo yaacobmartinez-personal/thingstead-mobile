@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/palette.dart';
 
 /// A yes/no dialog. Returns true when confirmed.
 Future<bool> confirmDialog(
@@ -24,7 +24,7 @@ Future<bool> confirmDialog(
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
           style: destructive
-              ? TextButton.styleFrom(foregroundColor: AppColors.danger)
+              ? TextButton.styleFrom(foregroundColor: context.palette.danger)
               : null,
           child: Text(confirmLabel),
         ),

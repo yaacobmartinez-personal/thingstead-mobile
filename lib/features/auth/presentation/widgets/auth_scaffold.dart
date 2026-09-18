@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/illustrations.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
+import '../../../../core/ui/round_icon_button.dart';
+import '../../../../core/ui/stagger.dart';
 
-/// Navy backdrop, brand mark, and a white card for the form — the layout of
-/// the Expo LoginScreen, shared by every auth screen.
+/// The auth layout: the garden-gate illustration bleeding to the top, the
+/// wordmark and title over its scrim, and a sheet with the form. Shared by
+/// every auth screen; [compact] shrinks the hero for the secondary screens.
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({
     super.key,
@@ -13,6 +18,7 @@ class AuthScaffold extends StatelessWidget {
     required this.child,
     this.footer,
     this.showBack = false,
+    this.compact = false,
   });
 
   final String title;
@@ -20,106 +26,137 @@ class AuthScaffold extends StatelessWidget {
   final Widget child;
   final Widget? footer;
   final bool showBack;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final size = MediaQuery.sizeOf(context);
+    final top = MediaQuery.paddingOf(context).top;
+    final heroHeight = size.height * (compact ? 0.30 : 0.40);
     return Scaffold(
-      backgroundColor: AppColors.navyDark,
-      appBar: showBack
-          ? AppBar(
-              backgroundColor: Colors.transparent,
-              foregroundColor: AppColors.onNavy,
-              elevation: 0,
-            )
-          : null,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.x6,
-              vertical: Spacing.x8,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight - Spacing.x8 * 2),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _Brand(title: title, subtitle: subtitle),
-                  const SizedBox(height: Spacing.x8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(Spacing.x5),
-                    decoration: BoxDecoration(
-                      color: AppColors.card,
-                      borderRadius: BorderRadius.circular(Radii.lg),
+      backgroundColor: p.sage,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: heroHeight + 40,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(Illustrations.auth, fit: BoxFit.cover, alignment: Alignment.bottomCenter),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.2, 0.55, 1],
+                      colors: p.scrim,
                     ),
-                    child: child,
                   ),
-                  if (footer != null) ...[
-                    const SizedBox(height: Spacing.x6),
-                    footer!,
-                  ],
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
+          SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: heroHeight,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(Spacing.gutter, 0, Spacing.gutter, Spacing.x10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _Wordmark(),
+                        const SizedBox(height: Spacing.x3),
+                        Text(
+                          title,
+                          style: AppType.display.copyWith(color: Colors.white, fontSize: 30),
+                        ),
+                        if (subtitle != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              subtitle!,
+                              style: AppType.body.copyWith(color: Colors.white.withValues(alpha: 0.85)),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -24),
+                  child: Container(
+                    constraints: BoxConstraints(minHeight: size.height - heroHeight + 24),
+                    decoration: BoxDecoration(
+                      color: p.sage,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(Radii.sheet)),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(
+                      Spacing.gutter,
+                      Spacing.x6,
+                      Spacing.gutter,
+                      Spacing.x8,
+                    ),
+                    child: StaggeredColumn(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(Spacing.gutter),
+                          decoration: BoxDecoration(
+                            color: p.surface,
+                            borderRadius: BorderRadius.circular(Radii.card),
+                          ),
+                          child: child,
+                        ),
+                        if (footer != null) ...[const SizedBox(height: Spacing.x5), footer!],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (showBack)
+            Positioned(
+              top: top + 8,
+              left: Spacing.gutter,
+              child: RoundIconButton(
+                icon: Icons.arrow_back,
+                tooltip: 'Back',
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _Brand extends StatelessWidget {
-  const _Brand({required this.title, this.subtitle});
-
-  final String title;
-  final String? subtitle;
+class _Wordmark extends StatelessWidget {
+  const _Wordmark();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final p = context.palette;
+    return Row(
       children: [
         Container(
-          width: 64,
-          height: 64,
+          width: 36,
+          height: 36,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.gold,
-            borderRadius: BorderRadius.circular(Radii.lg),
-          ),
-          child: const Text(
-            'T',
-            style: TextStyle(
-              color: AppColors.navyDark,
-              fontSize: 34,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          decoration: BoxDecoration(color: p.lime, borderRadius: BorderRadius.circular(Radii.sm)),
+          child: Text('T', style: AppType.heading.copyWith(color: p.onLime, fontSize: 20)),
         ),
-        const SizedBox(height: Spacing.x4),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.onNavy,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: Spacing.x2),
-          Text(
-            subtitle!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.gold,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
+        const SizedBox(width: Spacing.x2),
+        Text('Thingstead', style: AppType.heading.copyWith(color: Colors.white)),
       ],
     );
   }
@@ -133,15 +170,13 @@ class AuthError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: Spacing.x4),
       padding: const EdgeInsets.all(Spacing.x3),
-      decoration: BoxDecoration(
-        color: AppColors.dangerBg,
-        borderRadius: BorderRadius.circular(Radii.sm),
-      ),
-      child: Text(message, style: const TextStyle(color: AppColors.danger)),
+      decoration: BoxDecoration(color: p.dangerBg, borderRadius: BorderRadius.circular(Radii.sm)),
+      child: Text(message, style: AppType.small.copyWith(color: p.danger, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -154,15 +189,13 @@ class AuthNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: Spacing.x4),
       padding: const EdgeInsets.all(Spacing.x3),
-      decoration: BoxDecoration(
-        color: AppColors.successBg,
-        borderRadius: BorderRadius.circular(Radii.sm),
-      ),
-      child: Text(message, style: const TextStyle(color: AppColors.success)),
+      decoration: BoxDecoration(color: p.successBg, borderRadius: BorderRadius.circular(Radii.sm)),
+      child: Text(message, style: AppType.small.copyWith(color: p.success, fontWeight: FontWeight.w600)),
     );
   }
 }

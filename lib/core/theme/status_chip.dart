@@ -1,44 +1,54 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
+import 'palette.dart';
 import 'spacing.dart';
+import 'typography.dart';
 
-enum ChipTone { success, danger, warn, muted, navy }
+enum ChipTone { success, danger, warn, muted, navy, lime }
 
-/// A soft pill label for statuses: Published, Checked in, Waitlist.
-/// Same look as the Expo app's statusChip helper.
+/// A soft pill label for statuses: Published, Checked in, Waitlist. Reads the
+/// palette so it follows dark mode. [dot] adds a leading status dot.
 class StatusChip extends StatelessWidget {
-  const StatusChip(this.label, {super.key, this.tone = ChipTone.muted});
+  const StatusChip(this.label, {super.key, this.tone = ChipTone.muted, this.dot = false});
 
   final String label;
   final ChipTone tone;
+  final bool dot;
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final (bg, fg) = switch (tone) {
-      ChipTone.success => (AppColors.successBg, AppColors.success),
-      ChipTone.danger => (AppColors.dangerBg, AppColors.danger),
-      ChipTone.warn => (AppColors.warnBg, AppColors.warn),
-      ChipTone.navy => (AppColors.navy, AppColors.onNavy),
-      ChipTone.muted => (AppColors.neutralBg, AppColors.muted),
+      ChipTone.success => (p.successBg, p.success),
+      ChipTone.danger => (p.dangerBg, p.danger),
+      ChipTone.warn => (p.warnBg, p.warn),
+      ChipTone.navy => (p.strong, p.onInk),
+      ChipTone.lime => (p.lime, p.onLime),
+      ChipTone.muted => (p.surfaceTint, p.muted),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.x2,
-        vertical: Spacing.x1,
-      ),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(Radii.pill),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: fg,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.2,
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.x3, vertical: 5),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(Radii.pill)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (dot) ...[
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppType.caption.copyWith(color: fg, letterSpacing: 0.2),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
+import '../../../../core/ui/pill_button.dart';
+import '../../../../core/ui/sheets.dart';
 
 /// Type or paste a ticket code / URL when the camera cannot read it.
 /// Returns the entered text, or null when dismissed.
 Future<String?> showManualEntrySheet(BuildContext context) =>
-    showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
+    showAppSheet<String>(
+      context,
+      scrollControlled: true,
+      padded: false,
       builder: (context) => const _ManualEntrySheet(),
     );
 
@@ -43,25 +47,18 @@ class _ManualEntrySheetState extends State<_ManualEntrySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        Spacing.x4,
-        0,
-        Spacing.x4,
-        MediaQuery.viewInsetsOf(context).bottom + Spacing.x4,
-      ),
+      padding: const EdgeInsets.fromLTRB(Spacing.gutter, 0, Spacing.gutter, Spacing.gutter),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Enter a ticket code',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-          ),
+          Text('Enter a ticket code', style: AppType.heading.copyWith(color: p.ink)),
           const SizedBox(height: Spacing.x1),
-          const Text(
+          Text(
             'Paste the code or the whole check-in link from the ticket.',
-            style: TextStyle(color: Colors.black54),
+            style: AppType.small.copyWith(color: p.muted),
           ),
           const SizedBox(height: Spacing.x4),
           TextField(
@@ -73,7 +70,7 @@ class _ManualEntrySheetState extends State<_ManualEntrySheet> {
             decoration: const InputDecoration(hintText: 'Code or link'),
           ),
           const SizedBox(height: Spacing.x4),
-          FilledButton(onPressed: _submit, child: const Text('Check in')),
+          PillButton(label: 'Check in', onPressed: _submit, icon: Icons.check),
         ],
       ),
     );

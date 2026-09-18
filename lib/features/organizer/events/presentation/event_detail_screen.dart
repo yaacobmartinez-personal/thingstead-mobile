@@ -10,21 +10,30 @@ import '../../../../core/config/feature_availability.dart';
 import '../../../../core/model/enums.dart';
 import '../../../../core/network/api_error.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/illustrations.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/theme/status_chip.dart';
+import '../../../../core/theme/typography.dart';
 import '../../../../core/time/app_time.dart';
-import '../../../../core/widgets/async_view.dart';
+import '../../../../core/ui/hero_scaffold.dart';
+import '../../../../core/ui/pill_button.dart';
+import '../../../../core/ui/round_icon_button.dart';
+import '../../../../core/ui/skeleton.dart';
+import '../../../../core/ui/stagger.dart';
+import '../../../../core/ui/stats.dart';
+import '../../../../core/ui/tiles.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
-import '../../../../core/widgets/section_card.dart';
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/error_banner.dart';
 import '../../attendees/application/attendee_actions.dart';
 import '../../orgs/application/selected_org_controller.dart';
 import '../application/event_detail_controller.dart';
 import '../domain/event_detail.dart';
 import 'event_card.dart';
 
-/// One event: counts, public link, publish/close, attendees, export, edit,
-/// delete. Port of the web event page header plus the Expo card actions.
+/// One event for its organizer: hero, counters, date, public link, and the
+/// actions (Attendees, Scan, Publish/Close, Edit, Export, Delete).
 class EventDetailScreen extends ConsumerStatefulWidget {
   const EventDetailScreen({super.key, required this.eventSlug});
 
@@ -44,7 +53,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  /// Runs an action with the busy flag set and surfaces any error.
   Future<void> _run(Future<void> Function() action) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -93,268 +101,279 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     });
   }
 
+  Future<void> _menu(String org, EventDetail event, {required bool canExport, required bool canDelete}) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      builder: (context) {
+        final p = context.palette;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (canExport)
+                ListTile(
+                  leading: const Icon(Icons.download_outlined),
+                  title: const Text('Export attendees (CSV)'),
+                  onTap: () => Navigator.of(context).pop('export'),
+                ),
+              if (canDelete)
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: p.danger),
+                  title: Text('Delete event', style: TextStyle(color: p.danger)),
+                  onTap: () => Navigator.of(context).pop('delete'),
+                ),
+              const SizedBox(height: Spacing.x2),
+            ],
+          ),
+        );
+      },
+    );
+    if (!mounted) return;
+    switch (choice) {
+      case 'export':
+        await _export(org, event);
+      case 'delete':
+        await _delete(org, event);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final org = ref.watch(selectedOrgProvider);
     if (org == null) return const Scaffold(body: SizedBox.shrink());
     final mode = ref.watch(apiModeProvider);
     final canEdit = isAvailable(Feature.eventCrud, mode);
     final canExport = isAvailable(Feature.csvExport, mode);
+    final canDelete = canEdit && org.isAdmin;
     final provider = eventDetailProvider(org.slug, widget.eventSlug);
     final detail = ref.watch(provider);
+    final event = detail.value;
+    final notFound = detail.hasError && (detail.error as ApiError?)?.status == 404;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(detail.value?.title ?? 'Event'),
-        actions: [
-          if (canEdit && detail.hasValue)
-            IconButton(
-              tooltip: 'Edit',
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: _busy ? null : () => context.push(Routes.orgEventEdit(widget.eventSlug)),
-            ),
-          if (detail.hasValue && (canExport || (canEdit && org.isAdmin)))
-            PopupMenuButton<String>(
-              enabled: !_busy,
-              onSelected: (value) {
-                final event = detail.requireValue;
-                switch (value) {
-                  case 'export':
-                    _export(org.slug, event);
-                  case 'delete':
-                    _delete(org.slug, event);
-                }
-              },
-              itemBuilder: (context) => [
-                if (canExport)
-                  const PopupMenuItem(
-                    value: 'export',
-                    child: ListTile(
-                      leading: Icon(Icons.download_outlined),
-                      title: Text('Export attendees (CSV)'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                if (canEdit && org.isAdmin)
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: ListTile(
-                      leading: Icon(Icons.delete_outline, color: AppColors.danger),
-                      title: Text('Delete event', style: TextStyle(color: AppColors.danger)),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-              ],
-            ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.refresh(provider.future),
-        child: AsyncView(
-          value: detail,
-          onRetry: () => ref.invalidate(provider),
-          data: (event) => _Body(
-            org: org.slug,
-            event: event,
-            busy: _busy,
-            canEdit: canEdit,
-            onPublish: () => _setStatus(org.slug, event, EventStatus.published),
-            onClose: () => _setStatus(org.slug, event, EventStatus.closed),
-            onToast: _toast,
+    return HeroScaffold(
+      image: AssetImage(Illustrations.event(widget.eventSlug)),
+      heroFraction: 0.40,
+      eyebrow: org.name,
+      title: event?.title ?? (notFound ? 'Not found' : ''),
+      heroOverlay: event == null
+          ? null
+          : Builder(builder: (context) {
+              final (label, tone) = EventCard.statusChip(event.status);
+              return StatusChip(label, tone: tone);
+            }),
+      actions: [
+        if (canEdit && event != null)
+          RoundIconButton(
+            icon: Icons.edit_outlined,
+            tooltip: 'Edit',
+            onPressed: _busy ? null : () => context.push(Routes.orgEventEdit(widget.eventSlug)),
           ),
-        ),
-      ),
+        if (event != null && (canExport || canDelete))
+          RoundIconButton(
+            icon: Icons.more_horiz,
+            tooltip: 'More',
+            onPressed: _busy
+                ? null
+                : () => _menu(org.slug, event, canExport: canExport, canDelete: canDelete),
+          ),
+      ],
+      onRefresh: () => ref.refresh(provider.future),
+      bottom: event == null
+          ? null
+          : BottomActionBar(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: PillButton(
+                      label: 'Attendees (${event.registrations})',
+                      icon: Icons.people_outline,
+                      onPressed: _busy ? null : () => context.push(Routes.orgEventAttendees(event.slug)),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.x2),
+                  PillButton(
+                    label: 'Scan',
+                    icon: Icons.qr_code_scanner,
+                    variant: PillVariant.strong,
+                    expanded: false,
+                    onPressed: _busy
+                        ? null
+                        : () => context.push(
+                              '${Routes.orgScanLive}?event=${Uri.encodeComponent(event.slug)}',
+                            ),
+                  ),
+                ],
+              ),
+            ),
+      children: [
+        if (notFound)
+          const EmptyState(icon: Icons.event_busy_outlined, title: 'Event not found')
+        else if (detail.hasError && event == null)
+          ErrorBanner(
+            margin: EdgeInsets.zero,
+            message: (detail.error as ApiError?)?.message ?? 'Something went wrong.',
+            onRetry: () => ref.invalidate(provider),
+          )
+        else if (event == null)
+          const Skeleton.cards(rows: 3, height: 90)
+        else ...[
+          Enter(
+            child: Container(
+              padding: const EdgeInsets.all(Spacing.gutter),
+              decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(Radii.card)),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: StatCounter(
+                      value: event.confirmed,
+                      suffix: event.capacity == null ? null : ' / ${event.capacity}',
+                      label: 'Confirmed',
+                      color: event.isFull ? p.warn : null,
+                    ),
+                  ),
+                  Expanded(child: StatCounter(value: event.waitlist, label: 'Waitlist')),
+                  Expanded(child: StatCounter(value: event.checkedIn, label: 'Checked in', color: p.success)),
+                ],
+              ),
+            ),
+          ),
+          if (event.isFull)
+            Padding(
+              padding: const EdgeInsets.only(top: Spacing.x2),
+              child: Text(
+                event.waitlistEnabled
+                    ? 'Full — new sign-ups join the waitlist.'
+                    : 'Full — new sign-ups are turned away.',
+                style: AppType.small.copyWith(color: p.warn, fontWeight: FontWeight.w600),
+              ),
+            ),
+          const SizedBox(height: Spacing.x4),
+          Enter(index: 1, child: _DateRow(event: event)),
+          if (canEdit) ...[
+            const SizedBox(height: Spacing.x4),
+            Enter(
+              index: 2,
+              child: PillButton(
+                label: event.status == EventStatus.published ? 'Close registrations' : 'Publish',
+                icon: event.status == EventStatus.published ? Icons.lock_outline : Icons.publish_outlined,
+                variant: PillVariant.ghost,
+                loading: _busy,
+                onPressed: _busy
+                    ? null
+                    : () => _setStatus(
+                          org.slug,
+                          event,
+                          event.status == EventStatus.published ? EventStatus.closed : EventStatus.published,
+                        ),
+              ),
+            ),
+          ],
+          if ((event.description ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: Spacing.x4),
+            Enter(
+              index: 3,
+              child: Container(
+                padding: const EdgeInsets.all(Spacing.gutter),
+                decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(Radii.card)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Description', style: AppType.heading.copyWith(color: p.ink)),
+                    const SizedBox(height: Spacing.x2),
+                    Text(event.description!.trim(), style: AppType.body.copyWith(color: p.muted)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: Spacing.x4),
+          Enter(index: 4, child: _PublicLink(org: org.slug, event: event, onToast: _toast)),
+          const SizedBox(height: Spacing.x4),
+          Text(
+            'Created ${AppTime.formatEventDate(event.createdAt, event.timezone)} · ${event.timezone.replaceAll('_', ' ')}',
+            textAlign: TextAlign.center,
+            style: AppType.captionQuiet.copyWith(color: p.faint),
+          ),
+        ],
+      ],
     );
   }
 }
 
-class _Body extends StatelessWidget {
-  const _Body({
-    required this.org,
-    required this.event,
-    required this.busy,
-    required this.canEdit,
-    required this.onPublish,
-    required this.onClose,
-    required this.onToast,
-  });
+class _DateRow extends StatelessWidget {
+  const _DateRow({required this.event});
+
+  final EventDetail event;
+
+  @override
+  Widget build(BuildContext context) {
+    final (month, day, weekday, time) = AppTime.dateParts(event.startsAt, event.endsAt, event.timezone);
+    return DateTile(month: month, day: day, weekday: weekday, time: time);
+  }
+}
+
+class _PublicLink extends StatelessWidget {
+  const _PublicLink({required this.org, required this.event, required this.onToast});
 
   final String org;
   final EventDetail event;
-  final bool busy;
-  final bool canEdit;
-  final VoidCallback onPublish;
-  final VoidCallback onClose;
   final ValueChanged<String> onToast;
 
-  String get _publicUrl => '${AppConfig.publicOrigin}/$org/${event.slug}';
+  String get _url => '${AppConfig.publicOrigin}/$org/${event.slug}';
 
   @override
   Widget build(BuildContext context) {
-    final (label, tone) = EventCard.statusChip(event.status);
-    final isPublished = event.status == EventStatus.published;
-    return ListView(
-      padding: const EdgeInsets.all(Spacing.x4),
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                event.title,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-              ),
-            ),
-            const SizedBox(width: Spacing.x3),
-            StatusChip(label, tone: tone),
-          ],
-        ),
-        const SizedBox(height: Spacing.x2),
-        Text(
-          AppTime.formatEventWhen(event.startsAt, event.endsAt, event.timezone),
-          style: const TextStyle(color: AppColors.muted, height: 1.4),
-        ),
-        Text(
-          event.timezone.replaceAll('_', ' '),
-          style: const TextStyle(color: AppColors.faint, fontSize: 12),
-        ),
-        if ((event.description ?? '').trim().isNotEmpty) ...[
+    final p = context.palette;
+    final published = event.status == EventStatus.published;
+    return Container(
+      padding: const EdgeInsets.all(Spacing.gutter),
+      decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(Radii.card)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Public link', style: AppType.heading.copyWith(color: p.ink)),
+          const SizedBox(height: Spacing.x1),
+          Text(
+            published
+                ? 'Share this so people can register.'
+                : 'Only published events are visible at this address.',
+            style: AppType.small.copyWith(color: p.muted),
+          ),
           const SizedBox(height: Spacing.x3),
-          Text(event.description!.trim(), style: const TextStyle(height: 1.45)),
-        ],
-        const SizedBox(height: Spacing.x4),
-        Row(
-          children: [
-            Expanded(
-              child: _Stat(label: 'Confirmed', value: event.headcount, warn: event.isFull),
-            ),
-            Expanded(child: _Stat(label: 'Waitlist', value: '${event.waitlist}')),
-            Expanded(
-              child: _Stat(label: 'Checked in', value: '${event.checkedIn}', accent: true),
-            ),
-          ],
-        ),
-        if (event.isFull)
-          Padding(
-            padding: const EdgeInsets.only(top: Spacing.x2),
-            child: Text(
-              event.waitlistEnabled
-                  ? 'Full — new sign-ups join the waitlist.'
-                  : 'Full — new sign-ups are turned away.',
-              style: const TextStyle(color: AppColors.warn, fontSize: 13),
-            ),
-          ),
-        const SizedBox(height: Spacing.x4),
-        FilledButton.icon(
-          onPressed: busy ? null : () => context.push(Routes.orgEventAttendees(event.slug)),
-          icon: const Icon(Icons.people_outline, size: 20),
-          label: Text('Attendees (${event.registrations})'),
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-        ),
-        const SizedBox(height: Spacing.x2),
-        OutlinedButton.icon(
-          onPressed: busy
-              ? null
-              : () => context.push(
-                    '${Routes.orgScanLive}?event=${Uri.encodeComponent(event.slug)}',
-                  ),
-          icon: const Icon(Icons.qr_code_scanner, size: 20),
-          label: const Text('Scan check-in'),
-          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-        ),
-        if (canEdit) ...[
-          const SizedBox(height: Spacing.x2),
-          OutlinedButton.icon(
-            onPressed: busy ? null : (isPublished ? onClose : onPublish),
-            icon: Icon(isPublished ? Icons.lock_outline : Icons.publish_outlined, size: 20),
-            label: Text(isPublished ? 'Close registrations' : 'Publish'),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          ),
-        ],
-        const SizedBox(height: Spacing.x4),
-        SectionCard(
-          heading: 'Public link',
-          body: isPublished
-              ? 'Share this so people can register.'
-              : 'Only published events are visible at this address.',
-          children: [
-            SelectableText(
-              _publicUrl,
-              style: const TextStyle(color: AppColors.navy, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: Spacing.x3),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      await Clipboard.setData(ClipboardData(text: _publicUrl));
-                      onToast('Link copied.');
-                    },
-                    icon: const Icon(Icons.copy_outlined, size: 18),
-                    label: const Text('Copy'),
+          SelectableText(_url, style: AppType.bodyStrong.copyWith(color: p.moss)),
+          const SizedBox(height: Spacing.x3),
+          Row(
+            children: [
+              Expanded(
+                child: PillButton(
+                  label: 'Copy',
+                  icon: Icons.copy_outlined,
+                  variant: PillVariant.subtle,
+                  compact: true,
+                  onPressed: () async {
+                    await Clipboard.setData(ClipboardData(text: _url));
+                    onToast('Link copied.');
+                  },
+                ),
+              ),
+              const SizedBox(width: Spacing.x2),
+              Expanded(
+                child: PillButton(
+                  label: 'Share',
+                  icon: Icons.share_outlined,
+                  variant: PillVariant.subtle,
+                  compact: true,
+                  onPressed: () => SharePlus.instance.share(
+                    ShareParams(uri: Uri.parse(_url), subject: event.title),
                   ),
                 ),
-                const SizedBox(width: Spacing.x2),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => SharePlus.instance.share(
-                      ShareParams(uri: Uri.parse(_publicUrl), subject: event.title),
-                    ),
-                    icon: const Icon(Icons.share_outlined, size: 18),
-                    label: const Text('Share'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: Spacing.x4),
-        Text(
-          'Created ${AppTime.formatEventDate(event.createdAt, event.timezone)}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.faint, fontSize: 12),
-        ),
-      ],
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({
-    required this.label,
-    required this.value,
-    this.accent = false,
-    this.warn = false,
-  });
-
-  final String label;
-  final String value;
-  final bool accent;
-  final bool warn;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: accent
-                ? AppColors.success
-                : warn
-                    ? AppColors.warn
-                    : AppColors.navy,
+              ),
+            ],
           ),
-        ),
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(fontSize: 11, color: AppColors.faint, letterSpacing: 0.4),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

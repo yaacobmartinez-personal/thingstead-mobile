@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/fake/fake_store.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/router/routes.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/palette.dart';
 import '../../../core/theme/spacing.dart';
 import '../application/auth_controller.dart';
 import 'widgets/auth_scaffold.dart';
@@ -75,15 +74,16 @@ class _CheckEmailScreenState extends ConsumerState<CheckEmailScreen> {
   Widget build(BuildContext context) {
     final email = widget.email;
     return AuthScaffold(
-      title: AppConfig.appName,
-      subtitle: 'Check your email',
+      title: 'Check your email',
+      subtitle: 'We sent you a link',
       showBack: true,
+      compact: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_error != null) AuthError(_error!),
           if (_notice != null) AuthNotice(_notice!),
-          const Icon(Icons.mark_email_unread_outlined, size: 40, color: AppColors.navy),
+          Icon(Icons.mark_email_unread_outlined, size: 40, color: context.palette.moss),
           const SizedBox(height: Spacing.x3),
           Text(
             email == null
@@ -93,10 +93,10 @@ class _CheckEmailScreenState extends ConsumerState<CheckEmailScreen> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: Spacing.x2),
-          const Text(
+          Text(
             'Open it on this phone to finish creating your account.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.muted),
+            style: TextStyle(color: context.palette.muted),
           ),
           const SizedBox(height: Spacing.x5),
           OutlinedButton(

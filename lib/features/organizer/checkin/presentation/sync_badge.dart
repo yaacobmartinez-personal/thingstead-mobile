@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
 import '../../../../core/time/app_time.dart';
 import '../application/sync_controller.dart';
@@ -25,31 +25,31 @@ class SyncBadge extends ConsumerWidget {
       _ when s.attention > 0 => (
           '${s.attention} need attention',
           Colors.white,
-          AppColors.danger,
+          context.palette.danger,
           Icons.error_outline,
         ),
       _ when s.blocked == 'membership' => (
           'Sync blocked',
           Colors.white,
-          AppColors.danger,
+          context.palette.danger,
           Icons.block,
         ),
       _ when s.syncing => (
           'Syncing…',
-          AppColors.navyDark,
-          AppColors.gold,
+          context.palette.ink,
+          context.palette.lime,
           Icons.sync,
         ),
       _ when s.pending > 0 => (
           '${s.pending} pending',
-          AppColors.navyDark,
-          AppColors.gold,
+          context.palette.ink,
+          context.palette.lime,
           Icons.cloud_upload_outlined,
         ),
       _ when s.lastSyncedAt != null => (
           'Synced ${_ago(s.lastSyncedAt!)}',
-          onDark ? AppColors.onNavy : AppColors.muted,
-          onDark ? Colors.white12 : AppColors.neutralBg,
+          onDark ? Colors.white : context.palette.muted,
+          onDark ? Colors.white12 : context.palette.surfaceTint,
           Icons.cloud_done_outlined,
         ),
       _ => ('', Colors.transparent, Colors.transparent, Icons.cloud_done_outlined),

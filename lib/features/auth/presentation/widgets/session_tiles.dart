@@ -9,8 +9,11 @@ import '../../../../core/network/api_error.dart';
 import '../../../../core/network/server_url.dart';
 import '../../../../core/router/guards.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/palette.dart';
 import '../../../../core/theme/spacing.dart';
+import '../../../../core/theme/typography.dart';
+import '../../../../core/ui/pill_button.dart';
+import '../../../../core/ui/tiles.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/section_card.dart';
 import '../../../organizer/checkin/application/sync_controller.dart';
@@ -38,21 +41,14 @@ class SignedInCard extends ConsumerWidget {
       children: [
         Row(
           children: [
-            CircleAvatar(
-              backgroundColor: AppColors.navy,
-              foregroundColor: AppColors.onNavy,
-              child: Text(user.displayName.substring(0, 1).toUpperCase()),
-            ),
+            InitialsAvatar(name: user.displayName, size: 48),
             const SizedBox(width: Spacing.x3),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    user.displayName,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                  ),
-                  Text(user.email, style: const TextStyle(color: AppColors.muted)),
+                  Text(user.displayName, style: AppType.bodyStrong.copyWith(color: context.palette.ink)),
+                  Text(user.email, style: AppType.small.copyWith(color: context.palette.muted)),
                 ],
               ),
             ),
@@ -71,7 +67,7 @@ class SignedInCard extends ConsumerWidget {
                 ? 'Your session expires today. Sign in again to extend it.'
                 : 'Your session expires in $daysLeft day${daysLeft == 1 ? '' : 's'}. '
                     'Sign in again to extend it.',
-            style: const TextStyle(color: AppColors.warn, fontSize: 13),
+            style: AppType.small.copyWith(color: context.palette.warn, fontWeight: FontWeight.w600),
           ),
         ],
       ],
@@ -168,19 +164,15 @@ class DeleteAccountCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SectionCard(
       heading: 'Delete account',
-      headingColor: AppColors.danger,
-      borderColor: AppColors.danger,
+      headingColor: context.palette.danger,
       body: 'Permanently delete your Thingstead account. Your name and email '
           "are removed and you're taken off every organization. This can't be "
           'undone.',
       children: [
-        OutlinedButton(
+        PillButton(
+          label: 'Delete account',
+          variant: PillVariant.danger,
           onPressed: () => runDeleteAccount(context, ref),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.danger,
-            side: const BorderSide(color: AppColors.danger),
-          ),
-          child: const Text('Delete account'),
         ),
       ],
     );
@@ -213,17 +205,18 @@ class SignInPromptCard extends ConsumerWidget {
         if (notice != null)
           Padding(
             padding: const EdgeInsets.only(bottom: Spacing.x3),
-            child: Text(notice, style: const TextStyle(color: AppColors.warn)),
+            child: Text(notice, style: AppType.small.copyWith(color: context.palette.warn, fontWeight: FontWeight.w600)),
           ),
-        FilledButton(
+        PillButton(
+          label: 'Sign in',
           onPressed: () => context.push(loginFor(GoRouterState.of(context).uri)),
-          child: const Text('Sign in'),
         ),
         if (canSignUp) ...[
           const SizedBox(height: Spacing.x2),
-          OutlinedButton(
+          PillButton(
+            label: 'Create an account',
+            variant: PillVariant.subtle,
             onPressed: () => context.push(Routes.signup),
-            child: const Text('Create an account'),
           ),
         ],
       ],
@@ -244,7 +237,7 @@ class BuildFooter extends ConsumerWidget {
         '${AppConfig.appName} ${AppConfig.appVersion}'
         '${mode == ApiMode.fake ? ' · fake data' : ''}',
         textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.faint, fontSize: 12),
+        style: AppType.captionQuiet.copyWith(color: context.palette.faint),
       ),
     );
   }

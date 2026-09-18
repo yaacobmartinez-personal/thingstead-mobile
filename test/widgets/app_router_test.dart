@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/fake/seed.dart';
 import 'package:thingstead/core/router/app_router.dart';
 import 'package:thingstead/core/theme/app_theme.dart';
+import 'package:thingstead/core/ui/app_bottom_nav.dart';
+import 'package:thingstead/core/ui/pill_button.dart';
 import 'package:thingstead/features/auth/application/auth_controller.dart';
 
 import '../helpers/fakes.dart';
@@ -36,38 +38,38 @@ void main() {
   testWidgets('signed out boots to Find events', (tester) async {
     final c = await pumpRouter(tester, TestWorld());
     expect(location(c), '/a/events');
-    expect(find.text('Find events'), findsWidgets);
+    expect(find.text('Find your next event'), findsWidgets);
   });
 
   testWidgets('organizer sign-in from the login screen lands on /o/events',
       (tester) async {
     final c = await pumpRouter(tester, TestWorld());
 
-    await tester.tap(find.text('Account'));
+    await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Account')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pumpAndSettle();
     expect(location(c), '/auth/login');
 
     await tester.enterText(find.widgetWithText(TextField, 'Email'), FakeAccounts.organizerEmail);
     await tester.enterText(find.widgetWithText(TextField, 'Password'), FakeAccounts.password);
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pumpAndSettle();
 
     expect(c.read(authControllerProvider).isSignedIn, isTrue);
     expect(location(c), '/o/events');
-    expect(find.text('Settings'), findsOneWidget); // organizer tab bar
+    expect(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Settings')), findsOneWidget);
   });
 
   testWidgets('attendee sign-in returns to the attendee shell', (tester) async {
     final c = await pumpRouter(tester, TestWorld());
-    await tester.tap(find.text('Account'));
+    await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Account')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pumpAndSettle();
     await tester.enterText(find.widgetWithText(TextField, 'Email'), FakeAccounts.attendeeEmail);
     await tester.enterText(find.widgetWithText(TextField, 'Password'), FakeAccounts.password);
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(PillButton, 'Sign in'));
     await tester.pumpAndSettle();
     // Attendees return to where they tapped Sign in.
     expect(location(c), '/a/account');
@@ -85,9 +87,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(location(c), '/o/events');
 
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Settings')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Sign out'));
+    await tester.scrollUntilVisible(find.text('Sign out'), 200, scrollable: find.byType(Scrollable).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sign out'));
     await tester.pumpAndSettle();

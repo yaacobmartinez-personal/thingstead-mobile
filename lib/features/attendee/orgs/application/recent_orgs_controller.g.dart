@@ -42,7 +42,7 @@ final class RecentOrgsProvider
   RecentOrgs create() => RecentOrgs();
 }
 
-String _$recentOrgsHash() => r'd35986bae5cb5024828459e5631437720b2207f2';
+String _$recentOrgsHash() => r'a2dd1cdcc8ae72060f00a44b708169e88ce1a735';
 
 /// Orgs the person has opened, newest first, so the Find tab offers them
 /// back without a directory (discovery is links and codes only). Persisted
