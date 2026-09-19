@@ -153,6 +153,71 @@ void main() {
     expect((await cache.attendeeById('acme', 'r_1'))!.checkedInAt, isNull);
   });
 
+  group('a phone clock the server will not accept', () {
+    final tooFarAhead = ApiError(
+      400,
+      'That check-in time is in the future.',
+      fieldErrors: {'at': 'That check-in time is in the future.'},
+    );
+
+    test('manual: a 400 on `at` replays once without it and syncs', () async {
+      await queue.enqueueManual(org: 'acme', event: 'summer-meetup', registrationId: 'r_1', desired: true);
+      final serverAt = testNow.add(const Duration(hours: 1));
+      repo.manualAnswers
+        ..add(tooFarAhead)
+        ..add(serverAt);
+
+      final r = await worker.drain();
+      expect(r.synced, 1);
+      expect(r.attention, 0);
+      expect(repo.calls, ['manual:r_1:true', 'manual:r_1:true']);
+      expect(repo.manualAt, [testNow, null]);
+      final op = (await all()).single;
+      expect(op.state, 'synced');
+      expect(op.serverCheckedInAt, serverAt);
+      expect((await cache.attendeeById('acme', 'r_1'))!.checkedInAt, serverAt);
+    });
+
+    test('scan: the same fallback', () async {
+      await queue.enqueueScan(org: 'acme', event: 'summer-meetup', code: 'chk_r_2', registrationId: 'r_2');
+      final serverAt = testNow.add(const Duration(hours: 1));
+      repo.scanAnswers
+        ..add(tooFarAhead)
+        ..add(ScanResult(outcome: CheckInOutcome.checkedIn, name: 'Ben', at: serverAt));
+
+      final r = await worker.drain();
+      expect(r.synced, 1);
+      expect(repo.scanAt, [testNow, null]);
+      expect((await all()).single.state, 'synced');
+      expect((await cache.attendeeById('acme', 'r_2'))!.checkedInAt, serverAt);
+    });
+
+    test('if the retry fails too, it goes to attention', () async {
+      await queue.enqueueManual(org: 'acme', event: 'summer-meetup', registrationId: 'r_1', desired: true);
+      repo.manualAnswers
+        ..add(tooFarAhead)
+        ..add(ApiError.fromResponse(404, {'error': 'Not found'}));
+
+      final r = await worker.drain();
+      expect(r.synced, 0);
+      expect(r.attention, 1);
+      expect(repo.calls.length, 2);
+      expect((await all()).single.state, 'attention');
+    });
+
+    test('a 400 for any other reason still goes straight to attention', () async {
+      await queue.enqueueManual(org: 'acme', event: 'summer-meetup', registrationId: 'r_1', desired: true);
+      repo.manualAnswers.add(ApiError(400, 'Check the form.', fieldErrors: {'checkedIn': 'Required.'}));
+
+      final r = await worker.drain();
+      expect(r.attention, 1);
+      expect(repo.calls, ['manual:r_1:true']);
+      final op = (await all()).single;
+      expect(op.state, 'attention');
+      expect(op.lastError, 'Check the form.');
+    });
+  });
+
   test('404 on a manual op → attention', () async {
     await queue.enqueueManual(org: 'acme', event: 'summer-meetup', registrationId: 'r_9', desired: true);
     repo.manualAnswers.add(ApiError.fromResponse(404, {'error': 'Not found'}));

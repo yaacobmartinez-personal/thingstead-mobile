@@ -69,7 +69,11 @@ sync worker all write to the same rows, so one stream keeps the screen right.
   records when each person actually arrived; the server clamps it into
   `[registration.createdAt, now]` and rejects a clock more than five minutes
   fast. A server that predates E6 `at` strips the field and stamps the replay
-  time, as before — nothing breaks, the timestamp is just less accurate.
+  time, as before — nothing breaks, the timestamp is just less accurate. If
+  the server refuses the door time (400 with a field error on `at` — the
+  phone's clock is too far ahead), the op is replayed once without it and
+  synced with the server's own time; `clientAt` is persisted, so resending
+  it would fail identically for ever and park a real attendance.
 - **Session**: a deliberate sign-out wipes everything local (after a warning
   when ops are pending); an expired session keeps the queue for the re-login.
 - **UI**: `SyncBadge` (pending / syncing / attention / synced N min ago) on

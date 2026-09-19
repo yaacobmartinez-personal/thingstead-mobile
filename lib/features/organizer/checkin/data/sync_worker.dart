@@ -29,6 +29,8 @@ class DrainResult {
 /// - 401: stop (the auth controller signs out); ops stay pending.
 /// - 403: stop, the list is marked blocked by membership.
 /// - transport / 5xx: exponential backoff, attention after [maxAttempts].
+/// - 400 on `at` (phone clock too far ahead): replayed once without the door
+///   time, then synced; attention only if that fails too.
 /// - other 4xx: attention with the message.
 class SyncWorker {
   SyncWorker(this._db, this._repo, this._clock);
@@ -56,7 +58,7 @@ class SyncWorker {
       for (final op in ops) {
         await _db.updateOp(op.id, const PendingCheckinsCompanion(state: Value(AppDatabase.stateSyncing)));
         try {
-          final outcome = op.kind == 'scan' ? await _replayScan(op) : await _replayManual(op);
+          final outcome = await _replay(op);
           if (outcome) {
             synced++;
           } else {
@@ -87,6 +89,24 @@ class SyncWorker {
             stop = DrainStop.transport;
             break;
           }
+          if (_rejectedDoorTime(e)) {
+            // This phone's clock is more than the server tolerates ahead, and
+            // clientAt is persisted, so resending would fail the same way for
+            // ever. Replay once without it: the server stamps now (the
+            // pre-#24 behaviour), which beats parking a real attendance.
+            try {
+              if (await _replay(op, withDoorTime: false)) {
+                synced++;
+              } else {
+                attention++;
+              }
+              continue;
+            } on ApiError catch (retry) {
+              await _attention(op, error: retry.message);
+              attention++;
+              continue;
+            }
+          }
           await _attention(op, error: e.message);
           attention++;
         }
@@ -97,24 +117,35 @@ class SyncWorker {
     return DrainResult(synced: synced, attention: attention, stop: stop);
   }
 
-  Future<bool> _replayManual(PendingCheckin op) async {
-    // The door time, not the drain time: the server clamps it (#24).
-    final at = await _repo.setCheckedIn(
+  /// A 400 whose field error is on `at`: the server refused the door time as
+  /// impossibly far ahead (#24 / E6), as opposed to any other bad request.
+  static bool _rejectedDoorTime(ApiError e) => e.status == 400 && e.fieldErrors.containsKey('at');
+
+  /// [withDoorTime] sends the op's `clientAt` as `at` — the door time, not
+  /// the drain time; the server clamps it (#24, E6). Off only for the
+  /// fast-clock fallback above.
+  Future<bool> _replay(PendingCheckin op, {bool withDoorTime = true}) {
+    final at = withDoorTime ? op.clientAt : null;
+    return op.kind == 'scan' ? _replayScan(op, at: at) : _replayManual(op, at: at);
+  }
+
+  Future<bool> _replayManual(PendingCheckin op, {DateTime? at}) async {
+    final serverAt = await _repo.setCheckedIn(
       op.orgSlug,
       op.eventSlug ?? '',
       op.registrationId!,
       checkedIn: op.desiredCheckedIn ?? true,
-      at: op.clientAt,
+      at: at,
     );
-    await _db.setAttendeeCheckedIn(op.orgSlug, op.registrationId!, at);
-    await _synced(op, serverAt: at);
+    await _db.setAttendeeCheckedIn(op.orgSlug, op.registrationId!, serverAt);
+    await _synced(op, serverAt: serverAt);
     return true;
   }
 
-  Future<bool> _replayScan(PendingCheckin op) async {
-    // Same door time as the manual path (E6 `at`); a server that predates it
-    // ignores the field and stamps the replay time as before.
-    final r = await _repo.scan(op.orgSlug, op.code!, eventSlug: op.eventSlug, at: op.clientAt);
+  Future<bool> _replayScan(PendingCheckin op, {DateTime? at}) async {
+    // A server that predates E6 `at` ignores the field and stamps the replay
+    // time as before.
+    final r = await _repo.scan(op.orgSlug, op.code!, eventSlug: op.eventSlug, at: at);
     switch (r.outcome) {
       case CheckInOutcome.checkedIn || CheckInOutcome.already:
         if (op.registrationId != null) {
