@@ -39,7 +39,7 @@ plugged-in iPhone for 7 days at a time).
 ## 3. Clone and open
 
 ```bash
-git clone <remote-url> ~/dev/thingstead    # see "Remote" below
+git clone https://github.com/yaacobmartinez-personal/thingstead-mobile.git ~/dev/thingstead
 cd ~/dev/thingstead
 flutter pub get                            # also generates ios/Podfile the first time
 cd ios && pod install && cd ..
@@ -126,19 +126,10 @@ Transporter. Before the first upload:
 
 ## Remote
 
-The repo is developed on Windows and needs a remote the Mac can pull from.
-From the Windows checkout:
-
-```bash
-gh repo create thingstead --private --source=. --remote=origin --push
-```
-
-or create an empty private repo on GitHub and:
-
-```bash
-git remote add origin git@github.com:<you>/thingstead.git
-git push -u origin main
-```
+`https://github.com/yaacobmartinez-personal/thingstead-mobile` (private).
+Developed on Windows, pushed to `main`; the Mac pulls from there. Cloning
+over HTTPS needs a GitHub personal access token or `gh auth login` on the
+Mac; SSH works if the Mac's key is on the account.
 
 ## Troubleshooting
 
