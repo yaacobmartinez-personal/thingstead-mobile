@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: analyze + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.4
+          cache: true
+
+      # drift's tests open an in-memory SQLite through the system library.
+      - name: Install sqlite
+        run: sudo apt-get update -q && sudo apt-get install -y -q libsqlite3-dev
+
+      - run: flutter pub get
+
+      # Generated code (*.g.dart, *.freezed.dart, drift) is committed so the
+      # Mac never needs build_runner just to run. Fail if it has gone stale.
+      - name: Regenerate and check nothing changed
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- . ':!pubspec.lock' \
+            || { echo '::error::Generated files are out of date. Run: dart run build_runner build -d'; exit 1; }
+
+      - run: flutter analyze
+
+      - run: flutter test --reporter expanded
