@@ -65,8 +65,8 @@ Select **Runner** (project) → **Runner** (target) → **Signing & Capabilities
    `/.well-known/apple-app-site-association` (docs/API-CONTRACT.md §3) links
    open through the `thingstead://` scheme instead — that already works.
 3. Optional, not needed yet: **+ Capability → Sign in with Apple**. The
-   feature is behind `Feature.socialSignIn` and only exercised in fake mode
-   until the backend endpoint exists.
+   feature is behind `Feature.socialSignIn`, which stays off until the
+   backend ships #6/#7.
 
 Do the same for the `RunnerTests` target's Team if Xcode nags about it.
 
@@ -91,9 +91,9 @@ Settings → Privacy & Security → **Developer Mode**. If iOS says the
 developer is untrusted: Settings → General → VPN & Device Management → trust
 your team.
 
-`--dart-define=API_MODE=real` points at `https://thingstead.onrender.com`;
-note the live server has no mobile API yet (the regista repo is ahead of
-what Render deploys), so fake is the useful mode until that ships.
+`--dart-define=API_MODE=real` points at `https://thingstead.onrender.com`,
+which serves the whole mobile API except Google/Apple sign-in. Fake mode
+stays useful for demos and for working without an account.
 
 ## 6. Per session
 

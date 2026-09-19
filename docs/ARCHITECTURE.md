@@ -36,7 +36,9 @@ rules as the server (capacity, duplicates, last-admin guard).
 
 In `real` mode, `Feature` gates (`lib/core/config/feature_availability.dart`)
 hide UI for endpoints the backend has not shipped. Flipping one to `true` is
-the only change needed when an endpoint lands.
+the only change needed when an endpoint lands. As of 2026-09 everything in
+the contract is live except Google/Apple sign-in (#6, #7) and the deep-link
+well-known files (§3), so `socialSignIn` is the one flag still off.
 
 ## Offline check-in
 
@@ -105,7 +107,7 @@ or 404 rejects a provider's `.future` immediately.
 ## Attendee mode and deep links (Phase 5)
 
 Everything attendee-side is behind `Feature.attendeeMode` (API-CONTRACT
-#10–#17) and fake-backed until the server ships it.
+#10–#17), live on the real server since 2026-09.
 
 - `attendee/orgs` — public org page and event page (`PublicEventsRepository`),
   `RecentOrgs` (prefs-persisted shortcuts; there is no directory), the Find
