@@ -80,10 +80,11 @@ What the app collects and why, from `regista/docs/DATA-RETENTION.md`:
 - Third parties: none beyond the hosting provider; sign-in tokens from
   Google/Apple are verified and not stored.
 
-**Privacy policy URL:** ⚠️ the web only serves a per-organization policy
-(`thingstead.pro/<org>/privacy`); both stores need one URL for the app
-itself. Backend follow-up: serve `thingstead.pro/privacy` (apex, reserved
-segment already) with the platform-level policy before submitting.
+**Privacy policy URL:** `https://thingstead.pro/privacy` — the platform
+notice (regista branch `claude/platform-privacy`; the per-organization one
+at `/<org>/privacy` names the organizer as controller and is not the right
+URL for the app). ⚠️ The page gives `privacy@thingstead.pro` as the contact;
+create that mailbox or alias before submitting.
 
 ## Screenshots
 
