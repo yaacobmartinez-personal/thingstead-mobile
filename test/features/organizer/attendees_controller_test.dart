@@ -20,7 +20,7 @@ class _FailingCheckin implements CheckinRepository {
   final ApiError error;
 
   @override
-  Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn}) async =>
+  Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn, DateTime? at}) async =>
       throw error;
 
   @override

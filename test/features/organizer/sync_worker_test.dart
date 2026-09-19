@@ -19,9 +19,13 @@ class _ScriptedCheckin implements CheckinRepository {
   final manualAnswers = <Object>[]; // DateTime? or ApiError
   final calls = <String>[];
 
+  /// The `at` each manual replay carried (null = "now").
+  final manualAt = <DateTime?>[];
+
   @override
-  Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn}) async {
+  Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn, DateTime? at}) async {
     calls.add('manual:$id:$checkedIn');
+    manualAt.add(at);
     final a = manualAnswers.removeAt(0);
     if (a is ApiError) throw a;
     return a as DateTime?;
@@ -70,6 +74,16 @@ void main() {
   Future<PendingCheckin> only() async => (await db.watchOpenOps().first).single;
   Future<List<PendingCheckin>> all() async =>
       (await db.select(db.pendingCheckins).get());
+
+  test('a manual replay sends the door time, not the drain time (#24)', () async {
+    // Taken offline at testNow; the network comes back an hour later.
+    await queue.enqueueManual(org: 'acme', event: 'summer-meetup', registrationId: 'r_1', desired: true);
+    now = testNow.add(const Duration(hours: 1));
+    repo.manualAnswers.add(testNow);
+
+    await worker.drain();
+    expect(repo.manualAt, [testNow]);
+  });
 
   test('manual op → 200: synced, cache takes the server timestamp', () async {
     final serverAt = testNow.add(const Duration(seconds: 5));

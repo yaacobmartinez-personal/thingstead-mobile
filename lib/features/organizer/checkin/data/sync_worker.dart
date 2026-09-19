@@ -98,11 +98,14 @@ class SyncWorker {
   }
 
   Future<bool> _replayManual(PendingCheckin op) async {
+    // The door time, not the drain time: the server clamps it (#24). Scans
+    // (`_replayScan`) cannot do this yet — E6 has no `at` parameter.
     final at = await _repo.setCheckedIn(
       op.orgSlug,
       op.eventSlug ?? '',
       op.registrationId!,
       checkedIn: op.desiredCheckedIn ?? true,
+      at: op.clientAt,
     );
     await _db.setAttendeeCheckedIn(op.orgSlug, op.registrationId!, at);
     await _synced(op, serverAt: at);
