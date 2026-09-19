@@ -37,6 +37,7 @@ flutter test
 - [docs/REDESIGN.md](docs/REDESIGN.md) — the visual redesign plan (Phase D: green palette, illustrations, motion, dark mode)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — modes, layers, `API_MODE`
 - [docs/MAC-SETUP.md](docs/MAC-SETUP.md) — building and running the iOS app on a Mac
+- [docs/RELEASE.md](docs/RELEASE.md) — signing, release builds, icon/splash regeneration
 - [docs/API-CONTRACT.md](docs/API-CONTRACT.md) — backend contract
 
 ## Toolchain

@@ -62,3 +62,30 @@ flutter:
     - family: Manrope
       fonts:
         - asset: assets/fonts/Manrope-Variable.ttf
+
+# dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/brand/icon.png
+  android: true
+  adaptive_icon_background: "#C8DC96"
+  adaptive_icon_foreground: assets/brand/adaptive-icon.png
+  adaptive_icon_monochrome: assets/brand/adaptive-icon.png
+  min_sdk_android: 23
+  ios: true
+  remove_alpha_ios: true
+
+# dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#E8F0D9"
+  image: assets/brand/splash-icon.png
+  color_dark: "#121711"
+  image_dark: assets/brand/splash-icon-dark.png
+  android_12:
+    color: "#E8F0D9"
+    image: assets/brand/splash-icon.png
+    icon_background_color: "#C8DC96"
+    color_dark: "#121711"
+    image_dark: assets/brand/splash-icon-dark.png
+    icon_background_color_dark: "#1C231A"
+  ios: true
+  android: true

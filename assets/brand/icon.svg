@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<rect width="1024" height="1024" fill="#C8DC96"/>
+<!-- hexagon of six nodes with a T, centred in a 1024 box; scaled by S around the centre -->
+<g transform="translate(512 512) scale(1.18) translate(-512 -512)">
+  <g fill="none" stroke="#2F4A2A" stroke-width="34" stroke-linejoin="round">
+    <polygon points="512,312 685,412 685,612 512,712 339,612 339,412"/>
+  </g>
+  <g fill="#2F4A2A">
+    <circle cx="512" cy="312" r="44"/><circle cx="685" cy="412" r="44"/><circle cx="685" cy="612" r="44"/>
+    <circle cx="512" cy="712" r="44"/><circle cx="339" cy="612" r="44"/><circle cx="339" cy="412" r="44"/>
+  </g>
+  <g fill="#171C14">
+    <rect x="418" y="420" width="188" height="48" rx="12"/>
+    <rect x="487" y="420" width="50" height="184" rx="12"/>
+    <rect x="442" y="574" width="140" height="48" rx="12"/>
+  </g>
+</g>
+</svg>
