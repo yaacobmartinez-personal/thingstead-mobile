@@ -30,11 +30,12 @@ class RealCheckinRepository implements CheckinRepository {
   }
 
   @override
-  Future<ScanResult> scan(String orgSlug, String code, {String? eventSlug}) async {
+  Future<ScanResult> scan(String orgSlug, String code, {String? eventSlug, DateTime? at}) async {
     final json = await _api.post('/mobile/checkin', body: {
       'slug': orgSlug,
       'code': code,
       'eventSlug': ?eventSlug,
+      'at': ?at?.toUtc().toIso8601String(),
     });
     return ScanResult.fromJson(json);
   }

@@ -98,8 +98,7 @@ class SyncWorker {
   }
 
   Future<bool> _replayManual(PendingCheckin op) async {
-    // The door time, not the drain time: the server clamps it (#24). Scans
-    // (`_replayScan`) cannot do this yet — E6 has no `at` parameter.
+    // The door time, not the drain time: the server clamps it (#24).
     final at = await _repo.setCheckedIn(
       op.orgSlug,
       op.eventSlug ?? '',
@@ -113,7 +112,9 @@ class SyncWorker {
   }
 
   Future<bool> _replayScan(PendingCheckin op) async {
-    final r = await _repo.scan(op.orgSlug, op.code!, eventSlug: op.eventSlug);
+    // Same door time as the manual path (E6 `at`); a server that predates it
+    // ignores the field and stamps the replay time as before.
+    final r = await _repo.scan(op.orgSlug, op.code!, eventSlug: op.eventSlug, at: op.clientAt);
     switch (r.outcome) {
       case CheckInOutcome.checkedIn || CheckInOutcome.already:
         if (op.registrationId != null) {

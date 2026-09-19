@@ -24,7 +24,7 @@ class _FailingCheckin implements CheckinRepository {
       throw error;
 
   @override
-  Future<ScanResult> scan(String o, String code, {String? eventSlug}) async => throw error;
+  Future<ScanResult> scan(String o, String code, {String? eventSlug, DateTime? at}) async => throw error;
 }
 
 /// Lets a test wait for the cache stream to reach the controller.

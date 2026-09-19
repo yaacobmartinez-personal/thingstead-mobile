@@ -19,8 +19,9 @@ class _ScriptedCheckin implements CheckinRepository {
   final manualAnswers = <Object>[]; // DateTime? or ApiError
   final calls = <String>[];
 
-  /// The `at` each manual replay carried (null = "now").
+  /// The `at` each replay carried (null = "now"), manual and scan.
   final manualAt = <DateTime?>[];
+  final scanAt = <DateTime?>[];
 
   @override
   Future<DateTime?> setCheckedIn(String o, String e, String id, {required bool checkedIn, DateTime? at}) async {
@@ -32,8 +33,9 @@ class _ScriptedCheckin implements CheckinRepository {
   }
 
   @override
-  Future<ScanResult> scan(String o, String code, {String? eventSlug}) async {
+  Future<ScanResult> scan(String o, String code, {String? eventSlug, DateTime? at}) async {
     calls.add('scan:$code');
+    scanAt.add(at);
     final a = scanAnswers.removeAt(0);
     if (a is ApiError) throw a;
     return a as ScanResult;
@@ -83,6 +85,15 @@ void main() {
 
     await worker.drain();
     expect(repo.manualAt, [testNow]);
+  });
+
+  test('a scan replay sends the door time too (E6 `at`)', () async {
+    await queue.enqueueScan(org: 'acme', event: 'summer-meetup', code: 'chk_r_1', registrationId: 'r_1');
+    now = testNow.add(const Duration(hours: 1));
+    repo.scanAnswers.add(const ScanResult(outcome: CheckInOutcome.checkedIn, name: 'Ava'));
+
+    await worker.drain();
+    expect(repo.scanAt, [testNow]);
   });
 
   test('manual op → 200: synced, cache takes the server timestamp', () async {

@@ -11,6 +11,7 @@ import 'package:thingstead/core/network/unauthorized_events.dart';
 import 'package:thingstead/features/auth/application/auth_controller.dart';
 import 'package:thingstead/features/organizer/checkin/data/fake_checkin_repository.dart';
 import 'package:thingstead/features/organizer/checkin/data/real_checkin_repository.dart';
+import 'package:thingstead/features/organizer/checkin/domain/scan_result.dart';
 import 'package:thingstead/features/organizer/organizer_providers.dart';
 
 import '../../helpers/fakes.dart';
@@ -58,6 +59,32 @@ void main() {
       adapter.reply = {'checkedInAt': '2026-09-18T12:00:00.000Z'};
       await repo.setCheckedIn('acme', 'summer-meetup', 'r_1', checkedIn: true);
       expect(body(), {'checkedIn': true});
+    });
+  });
+
+  group('RealCheckinRepository.scan (E6 `at`)', () {
+    late _CapturingAdapter adapter;
+    late RealCheckinRepository repo;
+
+    setUp(() {
+      adapter = _CapturingAdapter();
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.test/api'))..httpClientAdapter = adapter;
+      repo = RealCheckinRepository(ApiClient(dio: dio, token: () => 't', unauthorized: UnauthorizedEvents()));
+      adapter.reply = {'outcome': 'checked_in', 'name': 'Ava'};
+    });
+
+    Map<String, Object?> body() => adapter.requests.single.data as Map<String, Object?>;
+
+    test('sends `at` as UTC ISO-8601 when given', () async {
+      final at = DateTime.utc(2026, 9, 18, 12);
+      await repo.scan('acme', 'chk_r_1', eventSlug: 'summer-meetup', at: at);
+      expect(adapter.requests.single.path, '/mobile/checkin');
+      expect(body(), {'slug': 'acme', 'code': 'chk_r_1', 'eventSlug': 'summer-meetup', 'at': at.toIso8601String()});
+    });
+
+    test('omits `at` for a live scan', () async {
+      await repo.scan('acme', 'chk_r_1');
+      expect(body(), {'slug': 'acme', 'code': 'chk_r_1'});
     });
   });
 
@@ -121,6 +148,38 @@ void main() {
 
     test('no `at` means now', () async {
       expect(await repo.setCheckedIn('acme', 'summer-meetup', fresh(), checkedIn: true), testNow);
+    });
+
+    group('and so does scan', () {
+      String token() => world.store.registrationById(fresh())!.checkInToken!;
+
+      test('a past `at` is stored as given', () async {
+        final door = testNow.subtract(const Duration(hours: 1));
+        final r = await repo.scan('acme', token(), at: door);
+        expect(r.outcome, CheckInOutcome.checkedIn);
+        expect(r.at, door);
+      });
+
+      test('a few seconds fast clamps to now', () async {
+        final r = await repo.scan('acme', token(), at: testNow.add(const Duration(seconds: 30)));
+        expect(r.at, testNow);
+      });
+
+      test('more than five minutes fast is a 400, before any lookup', () async {
+        await expectLater(
+          repo.scan('acme', 'garbage', at: testNow.add(FakeCheckinRepository.futureTolerance + const Duration(seconds: 1))),
+          throwsA(isA<ApiError>().having((e) => e.status, 'status', 400)),
+        );
+      });
+
+      test('a second scan reads already with the original door time', () async {
+        final t = token();
+        final door = testNow.subtract(const Duration(minutes: 20));
+        await repo.scan('acme', t, at: door);
+        final again = await repo.scan('acme', t);
+        expect(again.outcome, CheckInOutcome.already);
+        expect(again.at, door);
+      });
     });
   });
 }

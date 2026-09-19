@@ -19,5 +19,8 @@ abstract class CheckinRepository {
 
   /// E6 — check in from a scanned QR (raw token or full URL). Always a
   /// business outcome for a valid request; never throws for a bad ticket.
-  Future<ScanResult> scan(String orgSlug, String code, {String? eventSlug});
+  ///
+  /// [at] is the real door time when an offline scan is replayed, bounded
+  /// like the manual one (see [setCheckedIn]). Omitted = now.
+  Future<ScanResult> scan(String orgSlug, String code, {String? eventSlug, DateTime? at});
 }
