@@ -69,7 +69,7 @@ EventDetail = { id, slug, title, description: string|null,
 | E3 | `GET /mobile/orgs/{slug}/events` | member | → `{org: {slug, name}, events: [{slug, title, startsAt, endsAt, timezone, capacity, status, confirmed, checkedIn}]}` ordered by `startsAt` | 401, 403 |
 | E4 | `GET /mobile/orgs/{slug}/events/{eventSlug}/attendees?q=` | member | `q` = case-insensitive contains on name or email → `{event: {title, timezone, capacity}, attendees: [{id, name, email, status, checkedInAt, erased}]}` max 500, `createdAt` asc; name/email `null` when erased | 401, 403, 404 |
 | E5 | `POST /mobile/orgs/{slug}/events/{eventSlug}/attendees/{id}/checkin` | member | `{checkedIn: bool}` → `{checkedInAt: ISO|null}` (audit-logged; matches on `(id, tenantId)` only) | 400, 401, 403, 404 |
-| E6 | `POST /mobile/checkin` | member (slug in body) | `{slug, code, eventSlug?}` — `code` is the raw token or the full `…/checkin?c=` URL → `{outcome: "checked_in"|"already"|"cancelled"|"waitlist"|"wrong_event"|"invalid", name, at: ISO|null, eventTitle}` (always 200 for business outcomes) | 400, 401, 403 |
+| E6 | `POST /mobile/checkin` | member (slug in body) | `{slug, code, eventSlug?, at?}` — `code` is the raw token or the full `…/checkin?c=` URL; `at` (ISO-8601 UTC, optional) is the real door time for an offline replay, bounded exactly like #24 (regista `claude/checkin-door-time`; a server without it ignores the field) → `{outcome: "checked_in"|"already"|"cancelled"|"waitlist"|"wrong_event"|"invalid", name, at: ISO|null, eventTitle}` (always 200 for business outcomes) | 400, 401, 403 |
 | E7 | `DELETE /mobile/account` | bearer | → `{ok: true}` | 401, 409 `{error, reason: "sole_admin", blocked: [{tenantSlug, tenantName}]}` |
 
 ---

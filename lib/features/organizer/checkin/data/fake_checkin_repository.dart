@@ -61,9 +61,14 @@ class FakeCheckinRepository implements CheckinRepository {
   }
 
   @override
-  Future<ScanResult> scan(String orgSlug, String code, {String? eventSlug}) async {
+  Future<ScanResult> scan(String orgSlug, String code, {String? eventSlug, DateTime? at}) async {
     if (_offline()) throw ApiError.network();
     await _latency.wait();
+    final now = _clock();
+    // Like the route: an impossible clock is refused before anything else.
+    if (at != null && at.isAfter(now.add(futureTolerance))) {
+      throw ApiError.fromResponse(400, {'error': 'That check-in time is in the future.'});
+    }
     final ctx = requireMembership(_store, _currentUserId(), orgSlug);
     String? requireEventId;
     if (eventSlug != null) {
@@ -76,7 +81,8 @@ class FakeCheckinRepository implements CheckinRepository {
       tenantId: ctx.tenant.id,
       rawCode: code,
       requireEventId: requireEventId,
-      now: _clock(),
+      now: now,
+      at: at,
     );
   }
 }

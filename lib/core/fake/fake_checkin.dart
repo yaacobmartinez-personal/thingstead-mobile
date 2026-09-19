@@ -12,6 +12,10 @@ ScanResult performFakeCheckIn(
   required String rawCode,
   String? requireEventId,
   required DateTime now,
+
+  /// The claimed door time, already known not to be impossibly ahead of
+  /// [now]; pulled into [registration.createdAt, now] like the server does.
+  DateTime? at,
 }) {
   final token = extractCheckInToken(rawCode);
   if (token == null) return const ScanResult(outcome: CheckInOutcome.invalid);
@@ -42,6 +46,13 @@ ScanResult performFakeCheckIn(
   if (r.checkedInAt != null) {
     return ScanResult(outcome: CheckInOutcome.already, name: r.name, at: r.checkedInAt);
   }
-  r.checkedInAt = now;
-  return ScanResult(outcome: CheckInOutcome.checkedIn, name: r.name, at: now);
+  final stamp = at == null
+      ? now
+      : at.isBefore(r.createdAt)
+          ? r.createdAt
+          : at.isAfter(now)
+              ? now
+              : at.toUtc();
+  r.checkedInAt = stamp;
+  return ScanResult(outcome: CheckInOutcome.checkedIn, name: r.name, at: stamp);
 }
