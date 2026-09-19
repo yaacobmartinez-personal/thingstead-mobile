@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/api_mode.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/config/dev_tools.dart';
 import '../../../core/config/feature_availability.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/server_url.dart';
@@ -55,10 +56,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (signedIn && mounted) {
         // The screen may be pushed over a shell, where the router's own
         // redirect does not re-run, so move on explicitly.
-        context.go(afterSignInTarget(
-          from: widget.from,
-          mode: ref.read(appModeControllerProvider),
-        ));
+        context.go(
+          afterSignInTarget(
+            from: widget.from,
+            mode: ref.read(appModeControllerProvider),
+          ),
+        );
       }
     } on ApiError catch (e) {
       setState(() => _error = e.message);
@@ -95,25 +98,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return AuthScaffold(
       title: 'Welcome back',
       subtitle: 'Sign in to your account',
-      footer: TextButton(
-        onPressed: _busy ? null : () => context.push(Routes.serverAddress),
-        child: Text.rich(
-          TextSpan(
-            text: 'Server: ',
-            style: TextStyle(color: context.palette.muted, fontSize: 13),
-            children: [
-              TextSpan(
-                text: host,
-                style: TextStyle(
-                  color: context.palette.ink,
-                  fontWeight: FontWeight.w700,
+      footer: !ref.watch(devToolsProvider)
+          ? null
+          : TextButton(
+              onPressed: _busy
+                  ? null
+                  : () => context.push(Routes.serverAddress),
+              child: Text.rich(
+                TextSpan(
+                  text: 'Server: ',
+                  style: TextStyle(color: context.palette.muted, fontSize: 13),
+                  children: [
+                    TextSpan(
+                      text: host,
+                      style: TextStyle(
+                        color: context.palette.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const TextSpan(text: ' · Change'),
+                  ],
                 ),
               ),
-              const TextSpan(text: ' · Change'),
-            ],
-          ),
-        ),
-      ),
+            ),
       child: AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,7 +162,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             else
               const SizedBox(height: Spacing.x4),
             PillButton(
-              label: _busy ? (waking ? 'Waking the server…' : 'Signing in…') : 'Sign in',
+              label: _busy
+                  ? (waking ? 'Waking the server…' : 'Signing in…')
+                  : 'Sign in',
               onPressed: _busy ? null : _submit,
               loading: _busy && !waking,
             ),
@@ -167,10 +176,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 busy: _busy,
                 showApple: showApple,
                 onGoogle: () => _run(
-                  () => ref.read(authControllerProvider.notifier).signInWithGoogle(),
+                  () => ref
+                      .read(authControllerProvider.notifier)
+                      .signInWithGoogle(),
                 ),
                 onApple: () => _run(
-                  () => ref.read(authControllerProvider.notifier).signInWithApple(),
+                  () => ref
+                      .read(authControllerProvider.notifier)
+                      .signInWithApple(),
                 ),
               ),
             ],
@@ -180,10 +193,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: _busy
                     ? null
                     : () => context.pushReplacement(
-                          widget.from == Routes.organize
-                              ? '${Routes.signup}?organize=1'
-                              : Routes.signup,
-                        ),
+                        widget.from == Routes.organize
+                            ? '${Routes.signup}?organize=1'
+                            : Routes.signup,
+                      ),
                 child: const Text('New here? Create an account'),
               ),
             ],

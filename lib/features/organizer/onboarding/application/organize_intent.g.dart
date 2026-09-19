@@ -50,7 +50,7 @@ final class OrganizeIntentProvider
   }
 }
 
-String _$organizeIntentHash() => r'9a222f58b17e4f025f0b780ab2915950882d75c5';
+String _$organizeIntentHash() => r'0456baacfd0dbdcb184e2416a77a01039b824930';
 
 /// "I'm here to organize events", chosen at signup. Persisted because the
 /// verification step may come back through an emailed link (or a relaunch),

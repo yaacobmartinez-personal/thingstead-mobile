@@ -49,11 +49,15 @@ class AppearanceCard extends ConsumerWidget {
                         children: [
                           Icon(icon, size: 18, color: mode == value ? p.onLime : p.muted),
                           const SizedBox(width: Spacing.x1),
-                          Text(
-                            label,
-                            style: AppType.label.copyWith(
-                              fontSize: 13,
-                              color: mode == value ? p.onLime : p.muted,
+                          Flexible(
+                            child: Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppType.label.copyWith(
+                                fontSize: 13,
+                                color: mode == value ? p.onLime : p.muted,
+                              ),
                             ),
                           ),
                         ],

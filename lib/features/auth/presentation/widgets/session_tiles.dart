@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/api_mode.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/config/dev_tools.dart';
 import '../../../../core/config/feature_availability.dart';
 import '../../../../core/network/api_error.dart';
 import '../../../../core/network/server_url.dart';
@@ -33,7 +34,10 @@ class SignedInCard extends ConsumerWidget {
     final auth = ref.watch(authControllerProvider);
     final user = auth.user;
     if (user == null) return const SizedBox.shrink();
-    final canEdit = isAvailable(Feature.attendeeMode, ref.watch(apiModeProvider));
+    final canEdit = isAvailable(
+      Feature.attendeeMode,
+      ref.watch(apiModeProvider),
+    );
     final daysLeft = ref.watch(sessionDaysLeftProvider);
 
     return SectionCard(
@@ -47,8 +51,16 @@ class SignedInCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.displayName, style: AppType.bodyStrong.copyWith(color: context.palette.ink)),
-                  Text(user.email, style: AppType.small.copyWith(color: context.palette.muted)),
+                  Text(
+                    user.displayName,
+                    style: AppType.bodyStrong.copyWith(
+                      color: context.palette.ink,
+                    ),
+                  ),
+                  Text(
+                    user.email,
+                    style: AppType.small.copyWith(color: context.palette.muted),
+                  ),
                 ],
               ),
             ),
@@ -66,15 +78,22 @@ class SignedInCard extends ConsumerWidget {
             daysLeft <= 0
                 ? 'Your session expires today. Sign in again to extend it.'
                 : 'Your session expires in $daysLeft day${daysLeft == 1 ? '' : 's'}. '
-                    'Sign in again to extend it.',
-            style: AppType.small.copyWith(color: context.palette.warn, fontWeight: FontWeight.w600),
+                      'Sign in again to extend it.',
+            style: AppType.small.copyWith(
+              color: context.palette.warn,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ],
     );
   }
 
-  Future<void> _editName(BuildContext context, WidgetRef ref, String current) async {
+  Future<void> _editName(
+    BuildContext context,
+    WidgetRef ref,
+    String current,
+  ) async {
     final controller = TextEditingController(text: current);
     final name = await showDialog<String>(
       context: context,
@@ -111,19 +130,27 @@ class SignedInCard extends ConsumerWidget {
   }
 }
 
-/// Where the app points. Shown signed in or out.
+/// Where the app points. A developer tool: hidden in release builds until
+/// revealed (see [BuildFooter]). Renders with a trailing divider so the
+/// card it sits in needs no conditional of its own.
 class ServerAddressTile extends ConsumerWidget {
   const ServerAddressTile({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(devToolsProvider)) return const SizedBox.shrink();
     final host = ref.watch(serverUrlProvider.notifier).host;
-    return ListTile(
-      leading: const Icon(Icons.dns_outlined),
-      title: const Text('Server address'),
-      subtitle: Text(host),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(Routes.serverAddress),
+    return Column(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.dns_outlined),
+          title: const Text('Server address'),
+          subtitle: Text(host),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(Routes.serverAddress),
+        ),
+        const Divider(),
+      ],
     );
   }
 }
@@ -143,7 +170,8 @@ class SignOutTile extends ConsumerWidget {
           final ok = await confirmDialog(
             context,
             title: 'Unsynced check-ins',
-            message: 'You have $pending check-in${pending == 1 ? '' : 's'} that '
+            message:
+                'You have $pending check-in${pending == 1 ? '' : 's'} that '
                 "haven't reached the server yet. Signing out discards them. "
                 'Sign out anyway?',
             confirmLabel: 'Sign out anyway',
@@ -165,7 +193,8 @@ class DeleteAccountCard extends ConsumerWidget {
     return SectionCard(
       heading: 'Delete account',
       headingColor: context.palette.danger,
-      body: 'Permanently delete your Thingstead account. Your name and email '
+      body:
+          'Permanently delete your Thingstead account. Your name and email '
           "are removed and you're taken off every organization. This can't be "
           'undone.',
       children: [
@@ -205,11 +234,18 @@ class SignInPromptCard extends ConsumerWidget {
         if (notice != null)
           Padding(
             padding: const EdgeInsets.only(bottom: Spacing.x3),
-            child: Text(notice, style: AppType.small.copyWith(color: context.palette.warn, fontWeight: FontWeight.w600)),
+            child: Text(
+              notice,
+              style: AppType.small.copyWith(
+                color: context.palette.warn,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         PillButton(
           label: 'Sign in',
-          onPressed: () => context.push(loginFor(GoRouterState.of(context).uri)),
+          onPressed: () =>
+              context.push(loginFor(GoRouterState.of(context).uri)),
         ),
         if (canSignUp) ...[
           const SizedBox(height: Spacing.x2),
@@ -225,19 +261,35 @@ class SignInPromptCard extends ConsumerWidget {
 }
 
 /// Version + API mode, at the bottom of settings screens.
+/// The version line. Long-pressing it reveals the developer tools (server
+/// address) in release builds.
 class BuildFooter extends ConsumerWidget {
   const BuildFooter({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(apiModeProvider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Spacing.x4),
-      child: Text(
-        '${AppConfig.appName} ${AppConfig.appVersion}'
-        '${mode == ApiMode.fake ? ' · fake data' : ''}',
-        textAlign: TextAlign.center,
-        style: AppType.captionQuiet.copyWith(color: context.palette.faint),
+    final devTools = ref.watch(devToolsProvider);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: devTools
+          ? null
+          : () {
+              ref.read(devToolsProvider.notifier).reveal();
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(content: Text('Server settings unlocked.')),
+                );
+            },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: Spacing.x4),
+        child: Text(
+          '${AppConfig.appName} ${AppConfig.appVersion}'
+          '${mode == ApiMode.fake ? ' · fake data' : ''}',
+          textAlign: TextAlign.center,
+          style: AppType.captionQuiet.copyWith(color: context.palette.faint),
+        ),
       ),
     );
   }

@@ -172,6 +172,15 @@ offstage until revealed, so widget tests use
 `tester.ensureVisible(find.x(skipOffstage: false))` rather than
 `scrollUntilVisible` (whose drags can start on a text field).
 
+## Developer tools
+
+The server address (login footer, Account, Settings) is a developer
+affordance ported from the Expo app for pointing at staging or a laptop.
+`devToolsProvider` (`lib/core/config/dev_tools.dart`) hides it in release
+builds; long-pressing the version line in Account or Settings reveals it
+for the session, so support can still reach it. Debug and profile builds
+show it by default.
+
 ## Organizer onboarding
 
 New organizers set up in the app instead of on the web (API-CONTRACT

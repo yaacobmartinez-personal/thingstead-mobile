@@ -49,7 +49,6 @@ class AccountScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     const ServerAddressTile(),
-                    const Divider(),
                     ListTile(
                       leading: const Icon(Icons.auto_awesome_outlined),
                       title: const Text('Show the intro again'),
