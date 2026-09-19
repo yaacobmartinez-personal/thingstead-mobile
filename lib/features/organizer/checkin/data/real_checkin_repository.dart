@@ -13,15 +13,20 @@ class RealCheckinRepository implements CheckinRepository {
     String eventSlug,
     String registrationId, {
     required bool checkedIn,
+    DateTime? at,
   }) async {
     final json = await _api.post(
       '/mobile/orgs/${Uri.encodeComponent(orgSlug)}'
       '/events/${Uri.encodeComponent(eventSlug)}'
       '/attendees/${Uri.encodeComponent(registrationId)}/checkin',
-      body: {'checkedIn': checkedIn},
+      body: {
+        'checkedIn': checkedIn,
+        // Only when the caller knows better than "now" (offline replay).
+        'at': ?at?.toUtc().toIso8601String(),
+      },
     );
-    final at = json['checkedInAt'];
-    return at is String ? DateTime.parse(at).toUtc() : null;
+    final stamped = json['checkedInAt'];
+    return stamped is String ? DateTime.parse(stamped).toUtc() : null;
   }
 
   @override

@@ -20,12 +20,16 @@ class FakeCheckinRepository implements CheckinRepository {
   final Clock _clock;
   final String? Function() _currentUserId;
 
+  /// How far ahead of the server clock a client `at` may be (#24).
+  static const futureTolerance = Duration(minutes: 5);
+
   @override
   Future<DateTime?> setCheckedIn(
     String orgSlug,
     String eventSlug,
     String registrationId, {
     required bool checkedIn,
+    DateTime? at,
   }) async {
     if (_offline()) throw ApiError.network();
     await _latency.wait();
@@ -35,8 +39,21 @@ class FakeCheckinRepository implements CheckinRepository {
     if (r == null || r.tenantId != ctx.tenant.id) {
       throw ApiError.fromResponse(404, {'error': 'Not found'});
     }
+    final now = _clock();
+    // #24: `at` is clamped into [createdAt, now]; a clock more than five
+    // minutes fast is refused rather than silently corrected.
+    if (at != null && at.isAfter(now.add(futureTolerance))) {
+      throw ApiError.fromResponse(400, {'error': 'Check-in time is in the future.'});
+    }
     if (checkedIn) {
-      r.checkedInAt ??= _clock();
+      final stamp = at == null
+          ? now
+          : at.isBefore(r.createdAt)
+              ? r.createdAt
+              : at.isAfter(now)
+                  ? now
+                  : at.toUtc();
+      r.checkedInAt ??= stamp;
     } else {
       r.checkedInAt = null;
     }

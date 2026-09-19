@@ -64,6 +64,13 @@ sync worker all write to the same rows, so one stream keeps the screen right.
   local check-in is reverted; 404 → attention; 401 → stop (auth signs out,
   ops stay); 403 → stop, list marked blocked; transport/5xx → backoff
   `min(2^n s, 5 min)`, attention after 20 tries.
+- **Door time**: a manual replay sends the op's `clientAt` as `at`
+  (API-CONTRACT #24), so a queue drained an hour later still records when
+  each person actually arrived; the server clamps it into
+  `[registration.createdAt, now]` and rejects a clock more than five minutes
+  fast. **Scan replays cannot do this yet** — `POST /mobile/checkin` has no
+  `at` parameter, so an offline scan is stamped with its replay time until
+  the backend adds one. Scans are the busier path at the door.
 - **Session**: a deliberate sign-out wipes everything local (after a warning
   when ops are pending); an expired session keeps the queue for the re-login.
 - **UI**: `SyncBadge` (pending / syncing / attention / synced N min ago) on
