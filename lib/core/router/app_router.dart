@@ -29,7 +29,6 @@ import '../../features/organizer/onboarding/presentation/welcome_screen.dart';
 import '../../features/organizer/orgs/presentation/org_picker_screen.dart';
 import '../../features/organizer/scanner/presentation/scan_entry_screen.dart';
 import '../../features/organizer/scanner/presentation/scanner_screen.dart';
-import '../../features/organizer/settings/presentation/server_address_screen.dart';
 import '../../features/organizer/settings/presentation/settings_screen.dart';
 import '../../features/organizer/team/presentation/team_screen.dart';
 import '../../features/shell/application/app_mode_controller.dart';
@@ -108,10 +107,6 @@ GoRouter appRouter(Ref ref) {
         path: Routes.reset,
         builder: (context, state) =>
             ResetPasswordScreen(token: state.uri.queryParameters['token']),
-      ),
-      GoRoute(
-        path: Routes.serverAddress,
-        builder: (context, state) => const ServerAddressScreen(),
       ),
 
       // ---- attendee shell ---------------------------------------------------

@@ -48,6 +48,4 @@ abstract final class Routes {
   static const orgFirstEvent = '/o/events/new?first=1';
   static String orgWelcome(String? eventSlug) =>
       eventSlug == null ? '/o/welcome' : '/o/welcome?event=$eventSlug';
-  /// Outside both shells so it is reachable from the login screen.
-  static const serverAddress = '/settings/server';
 }

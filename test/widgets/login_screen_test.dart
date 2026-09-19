@@ -51,7 +51,6 @@ void main() {
     expect(find.text('Continue with Apple'), findsOneWidget);
     expect(find.text('Forgot password?'), findsOneWidget);
     expect(find.text('New here? Create an account'), findsOneWidget);
-    expect(find.textContaining('Server: '), findsOneWidget);
   });
 
   testWidgets('Google button signs in', (tester) async {

@@ -27,7 +27,8 @@ abstract final class AppConfig {
 
   static final ApiMode apiMode = ApiMode.parse(_apiModeRaw);
 
-  /// Default API host. Editable at runtime in Settings (mirrors the Expo app).
+  /// The API host. Fixed per build: `--dart-define=SERVER_URL=http://10.0.2.2:3000`
+  /// for a laptop backend; there is no runtime setting.
   static const String defaultServerUrl = String.fromEnvironment(
     'SERVER_URL',
     defaultValue: 'https://thingstead.onrender.com',

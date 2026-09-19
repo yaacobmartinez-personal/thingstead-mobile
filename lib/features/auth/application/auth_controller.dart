@@ -5,7 +5,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_error.dart';
-import '../../../core/network/server_url.dart';
 import '../../../core/network/token_codec.dart';
 import '../../../core/network/unauthorized_events.dart';
 import '../../../core/storage/boot_data.dart';
@@ -212,16 +211,9 @@ class AuthController extends _$AuthController {
     await signOut(reason: SignOutReason.accountDeleted);
   }
 
-  /// Point the app at another deployment. A token from one server means
-  /// nothing to another, so a live session ends.
-  Future<void> changeServer(String url) async {
-    await ref.read(serverUrlProvider.notifier).set(url);
-    if (state.isSignedIn) await signOut(reason: SignOutReason.serverChanged);
-  }
-
   Future<void> signOut({SignOutReason reason = SignOutReason.user}) async {
     _expiryTimer?.cancel();
-    if (!state.isSignedIn && reason != SignOutReason.serverChanged) {
+    if (!state.isSignedIn) {
       state = AuthState.signedOut(reason: reason);
       return;
     }

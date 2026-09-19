@@ -4,10 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/api_mode.dart';
 import '../../../../core/config/app_config.dart';
-import '../../../../core/config/dev_tools.dart';
 import '../../../../core/config/feature_availability.dart';
 import '../../../../core/network/api_error.dart';
-import '../../../../core/network/server_url.dart';
 import '../../../../core/router/guards.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/palette.dart';
@@ -130,31 +128,6 @@ class SignedInCard extends ConsumerWidget {
   }
 }
 
-/// Where the app points. A developer tool: hidden in release builds until
-/// revealed (see [BuildFooter]). Renders with a trailing divider so the
-/// card it sits in needs no conditional of its own.
-class ServerAddressTile extends ConsumerWidget {
-  const ServerAddressTile({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!ref.watch(devToolsProvider)) return const SizedBox.shrink();
-    final host = ref.watch(serverUrlProvider.notifier).host;
-    return Column(
-      children: [
-        ListTile(
-          leading: const Icon(Icons.dns_outlined),
-          title: const Text('Server address'),
-          subtitle: Text(host),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push(Routes.serverAddress),
-        ),
-        const Divider(),
-      ],
-    );
-  }
-}
-
 class SignOutTile extends ConsumerWidget {
   const SignOutTile({super.key});
 
@@ -222,7 +195,6 @@ class SignInPromptCard extends ConsumerWidget {
     final canSignUp = isAvailable(Feature.signup, ref.watch(apiModeProvider));
     final notice = switch (reason) {
       SignOutReason.sessionExpired => 'Your session expired. Sign in again.',
-      SignOutReason.serverChanged => 'Server changed. Sign in again.',
       SignOutReason.accountDeleted => 'Your account has been deleted.',
       _ => null,
     };
@@ -261,35 +233,19 @@ class SignInPromptCard extends ConsumerWidget {
 }
 
 /// Version + API mode, at the bottom of settings screens.
-/// The version line. Long-pressing it reveals the developer tools (server
-/// address) in release builds.
 class BuildFooter extends ConsumerWidget {
   const BuildFooter({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(apiModeProvider);
-    final devTools = ref.watch(devToolsProvider);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onLongPress: devTools
-          ? null
-          : () {
-              ref.read(devToolsProvider.notifier).reveal();
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(content: Text('Server settings unlocked.')),
-                );
-            },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: Spacing.x4),
-        child: Text(
-          '${AppConfig.appName} ${AppConfig.appVersion}'
-          '${mode == ApiMode.fake ? ' · fake data' : ''}',
-          textAlign: TextAlign.center,
-          style: AppType.captionQuiet.copyWith(color: context.palette.faint),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Spacing.x4),
+      child: Text(
+        '${AppConfig.appName} ${AppConfig.appVersion}'
+        '${mode == ApiMode.fake ? ' · fake data' : ''}',
+        textAlign: TextAlign.center,
+        style: AppType.captionQuiet.copyWith(color: context.palette.faint),
       ),
     );
   }

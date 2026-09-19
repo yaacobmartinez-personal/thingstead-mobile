@@ -6,10 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/api_mode.dart';
 import '../../../core/config/app_config.dart';
-import '../../../core/config/dev_tools.dart';
 import '../../../core/config/feature_availability.dart';
 import '../../../core/network/api_error.dart';
-import '../../../core/network/server_url.dart';
 import '../../../core/network/unauthorized_events.dart';
 import '../../../core/router/guards.dart';
 import '../../../core/router/routes.dart';
@@ -22,7 +20,7 @@ import 'widgets/auth_scaffold.dart';
 import 'widgets/social_buttons.dart';
 
 /// Port of the Expo LoginScreen: email + password, plus social sign-in and
-/// the "Server: host · Change" footer. On success the router's redirect
+/// links to signup and reset. On success the router's redirect
 /// moves on (to `from`, or the shell for the person's role).
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, this.from});
@@ -89,7 +87,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final apiMode = ref.watch(apiModeProvider);
     final waking = ref.watch(serverWakingProvider);
-    final host = ref.watch(serverUrlProvider.notifier).host;
     // The Google button also needs a client id baked in (GOOGLE_WEB_CLIENT_ID);
     // Apple needs nothing beyond iOS. Fake mode shows both for the demo.
     final socialFeature = isAvailable(Feature.socialSignIn, apiMode);
@@ -102,29 +99,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return AuthScaffold(
       title: 'Welcome back',
       subtitle: 'Sign in to your account',
-      footer: !ref.watch(devToolsProvider)
-          ? null
-          : TextButton(
-              onPressed: _busy
-                  ? null
-                  : () => context.push(Routes.serverAddress),
-              child: Text.rich(
-                TextSpan(
-                  text: 'Server: ',
-                  style: TextStyle(color: context.palette.muted, fontSize: 13),
-                  children: [
-                    TextSpan(
-                      text: host,
-                      style: TextStyle(
-                        color: context.palette.ink,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const TextSpan(text: ' · Change'),
-                  ],
-                ),
-              ),
-            ),
       child: AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

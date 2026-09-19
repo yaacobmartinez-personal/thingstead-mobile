@@ -48,7 +48,6 @@ class AccountScreen extends ConsumerWidget {
               Card(
                 child: Column(
                   children: [
-                    const ServerAddressTile(),
                     ListTile(
                       leading: const Icon(Icons.auto_awesome_outlined),
                       title: const Text('Show the intro again'),

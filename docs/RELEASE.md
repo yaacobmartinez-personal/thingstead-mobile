@@ -55,8 +55,8 @@ not, suspect a missing keep rule first: `adb logcat | grep -i "ClassNotFound\|No
 - `allowBackup=false` + `dataExtractionRules` excluding everything: the
   session token is in encrypted storage whose key does not survive a
   restore, so a backup would only produce a half-broken app.
-- `devToolsProvider` hides the server-address controls in release
-  (long-press the version line to reveal).
+- The server address is a compile-time constant (`--dart-define=SERVER_URL`);
+  there is no runtime control for it.
 - Release is not `DEBUGGABLE`; check with
   `adb shell dumpsys package pro.thingstead.app | grep flags`.
 
