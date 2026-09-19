@@ -74,7 +74,7 @@ EventDetail = { id, slug, title, description: string|null,
 
 ---
 
-## 2. Endpoints the app needs (to be built)
+## 2. Endpoints the app needs (live in production since 2026-09, except #6 and #7)
 
 "Backend follow-up" notes what the Next.js side must add; none of it is done by
 the app. Item numbers are referenced from `lib/core/config/feature_availability.dart`.
