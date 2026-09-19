@@ -88,8 +88,8 @@ the app. Item numbers are referenced from `lib/core/config/feature_availability.
 | 3 | `POST /mobile/auth/resend-verification` | none | `{email}` → `{ok: true}` always | 429 | Web resend is cookie-keyed (`signup/actions.tsx`); needs an email-keyed variant. |
 | 4 | `POST /mobile/auth/forgot-password` | none | `{email}` → `{ok: true}` always | 429 | New `PasswordResetToken` (hashed, 1 h TTL, single-use) + email template + a web page at `app.<root>/reset?token=` for users without the app. **The web has no reset flow today.** |
 | 5 | `POST /mobile/auth/reset-password` | none | `{token, password}` → `{token, user}` | 400 invalid / expired | Sets `passwordHash`, marks `emailVerified` if null, invalidates other reset tokens for the user. |
-| 6 | `POST /mobile/auth/google` | none | `{idToken}` → `{token, user, isNewUser: bool}` | 401 bad token, 403 Google reports `email_verified=false`, 429 | Verify the JWT against Google (`aud` = the **Web** OAuth client id, `iss` google). Link by lower-cased email; create the user with `emailVerified = now`. Optional `User.googleSub`. |
-| 7 | `POST /mobile/auth/apple` | none | `{identityToken, authorizationCode?, nonce, fullName?: {givenName, familyName}}` → `{token, user, isNewUser}` | 401 bad token / nonce mismatch, 400 `{reason: "apple_identity_incomplete"}` | Verify against Apple's JWKS (`aud` = `pro.thingstead.app`; also the Services ID if Android support is added later). Add `User.appleSub String? @unique`. Match by `appleSub` first, then email. Apple sends name/email **only on the first authorization**; the app persists and resends `fullName`, but if the `sub` is unknown and no email arrives, return the 400 so the app can show the "Stop using Apple ID → retry" remedy. Private-relay emails are fine. |
+| 6 | `POST /mobile/auth/google` *(regista `claude/app-links`)* | none | `{idToken}` → `{token, user, isNewUser: bool}` | 401 bad token, 403 Google reports `email_verified=false`, 429 | Verify the JWT against Google (`aud` = the **Web** OAuth client id, `iss` google). Link by lower-cased email; create the user with `emailVerified = now`. Optional `User.googleSub`. |
+| 7 | `POST /mobile/auth/apple` *(regista `claude/app-links`)* | none | `{identityToken, authorizationCode?, nonce, fullName?: {givenName, familyName}}` → `{token, user, isNewUser}` | 401 bad token / nonce mismatch, 400 `{reason: "apple_identity_incomplete"}` | Verify against Apple's JWKS (`aud` = `pro.thingstead.app`; also the Services ID if Android support is added later). Add `User.appleSub String? @unique`. Match by `appleSub` first, then email. Apple sends name/email **only on the first authorization**; the app persists and resends `fullName`, but if the `sub` is unknown and no email arrives, return the 400 so the app can show the "Stop using Apple ID → retry" remedy. Private-relay emails are fine. |
 | 8 | `GET /mobile/me` | bearer | → `{user: {id, email, name, emailVerified: bool}, orgs: [Org]}` | 401 | Replaces the app's boot-time `GET /mobile/orgs` probe with one call. |
 | 9 | `PATCH /mobile/me` | bearer | `{name}` → `{user}` | 400 | — |
 
@@ -153,7 +153,9 @@ The web creates a Tenant at signup (`app/home/signup/actions.tsx`) and keeps it 
 
 ---
 
-## 3. Deep-link hosting (backend follow-up, no app change)
+## 3. Deep-link hosting
+
+**Status:** served by regista `claude/app-links` as route handlers (`app/.well-known/*/route.ts`, unaffected by the tenant proxy). `assetlinks.json` lists the upload key (docs/RELEASE.md) plus whatever `ANDROID_CERT_SHA256` adds — set that to Play's app-signing key after the first upload. The Apple file is a deliberate 404 until `APPLE_TEAM_ID` is set (iOS caches a malformed file as a failure; a missing one just means "no links yet").
 
 For Android App Links and iOS Universal Links to open the app directly, the
 web must serve, on **both** `thingstead.pro` and `app.thingstead.pro`, with
@@ -162,8 +164,9 @@ web must serve, on **both** `thingstead.pro` and `app.thingstead.pro`, with
 - `/.well-known/assetlinks.json` — package `pro.thingstead.app`, the SHA-256 of
   the **upload** key *and* of the **Play App Signing** key.
 - `/.well-known/apple-app-site-association` — `<TEAMID>.pro.thingstead.app`;
-  on the apex include everything except `/signup*`, `/privacy*`, `/app*`; on
-  `app.` include only `/checkin`, `/verify`, `/reset`, `/invite`.
+  the apex claims `/*` (the app's own deep-link parser sends reserved paths
+  such as `/signup` and `/privacy` to the browser); `app.` claims only
+  `/checkin`, `/verify`, `/reset`, `/invite`.
 
 Until these exist the custom scheme `thingstead://` and the OS "Open with"
 chooser still work.

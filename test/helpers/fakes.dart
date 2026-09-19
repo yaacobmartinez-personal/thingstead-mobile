@@ -72,6 +72,7 @@ class TestWorld {
     DateTime? now,
     bool online = true,
     FakeLatency latency = FakeLatency.none,
+    this.apiMode = ApiMode.fake,
   })
       : now = now ?? testNow,
         secure = InMemorySecureStore(),
@@ -89,7 +90,7 @@ class TestWorld {
         yield _online;
         yield* connectivity.stream;
       }),
-      apiModeProvider.overrideWithValue(ApiMode.fake),
+      apiModeProvider.overrideWithValue(apiMode),
       clockProvider.overrideWithValue(() => this.now),
       fakeLatencyProvider.overrideWithValue(latency),
       fakeStoreProvider.overrideWithValue(store),
@@ -102,6 +103,10 @@ class TestWorld {
   }
 
   final DateTime now;
+
+  /// Real mode here still uses the fakes (every repository is overridden);
+  /// it only changes what the feature gates and UI think the mode is.
+  final ApiMode apiMode;
   final InMemorySecureStore secure;
   final InMemoryPrefs prefs;
   final FakeStore store;

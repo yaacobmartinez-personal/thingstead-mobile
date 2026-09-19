@@ -90,10 +90,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final apiMode = ref.watch(apiModeProvider);
     final waking = ref.watch(serverWakingProvider);
     final host = ref.watch(serverUrlProvider.notifier).host;
-    final social = isAvailable(Feature.socialSignIn, apiMode);
+    // The Google button also needs a client id baked in (GOOGLE_WEB_CLIENT_ID);
+    // Apple needs nothing beyond iOS. Fake mode shows both for the demo.
+    final socialFeature = isAvailable(Feature.socialSignIn, apiMode);
+    final showGoogle = socialFeature && (apiMode == ApiMode.fake || AppConfig.googleWebClientId.isNotEmpty);
     final canSignUp = isAvailable(Feature.signup, apiMode);
     final canReset = isAvailable(Feature.passwordReset, apiMode);
-    final showApple = social && (Platform.isIOS || apiMode == ApiMode.fake);
+    final showApple = socialFeature && (Platform.isIOS || apiMode == ApiMode.fake);
+    final social = showGoogle || showApple;
 
     return AuthScaffold(
       title: 'Welcome back',
@@ -174,6 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: Spacing.x5),
               SocialButtons(
                 busy: _busy,
+                showGoogle: showGoogle,
                 showApple: showApple,
                 onGoogle: () => _run(
                   () => ref
