@@ -67,7 +67,7 @@ void main() {
 
   group('session ended on a protected route', () {
     test('deliberately → attendee home', () {
-      for (final r in [SignOutReason.user, SignOutReason.accountDeleted, SignOutReason.serverChanged]) {
+      for (final r in [SignOutReason.user, SignOutReason.accountDeleted]) {
         expect(go('/o/settings', AuthState.signedOut(reason: r)), '/a/events', reason: '');
       }
     });

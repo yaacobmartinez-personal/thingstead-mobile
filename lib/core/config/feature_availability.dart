@@ -31,9 +31,11 @@ enum Feature {
 const Map<Feature, bool> _shippedOnRealServer = {
   Feature.signup: true, // #1-#3
   Feature.passwordReset: true, // #4, #5
-  // The one thing still missing: POST /mobile/auth/google and /auth/apple do
-  // not exist. Everything else here has a route behind it.
-  Feature.socialSignIn: false, // #6, #7 — not built
+  // #6/#7 ship in regista `claude/app-links`. The login screen additionally
+  // hides the Google button unless GOOGLE_WEB_CLIENT_ID was baked in, and
+  // Apple only appears on iOS, so a build without the OAuth setup shows
+  // neither rather than a button that fails.
+  Feature.socialSignIn: true, // #6, #7
   Feature.attendeeMode: true, // #8-#17
   Feature.eventCrud: true, // #18-#22
   Feature.promoteErase: true, // #25, #26

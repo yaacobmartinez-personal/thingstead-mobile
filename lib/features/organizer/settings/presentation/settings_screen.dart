@@ -69,7 +69,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: Spacing.x4),
           const Card(
             child: Column(
-              children: [ServerAddressTile(), SignOutTile()],
+              children: [SignOutTile()],
             ),
           ),
           const SizedBox(height: Spacing.x4),

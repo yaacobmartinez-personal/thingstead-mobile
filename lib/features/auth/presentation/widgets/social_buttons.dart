@@ -11,12 +11,15 @@ class SocialButtons extends StatelessWidget {
   const SocialButtons({
     super.key,
     required this.busy,
+    this.showGoogle = true,
     required this.showApple,
     required this.onGoogle,
     required this.onApple,
   });
 
   final bool busy;
+  /// Off when no Google client id was baked into the build (real mode).
+  final bool showGoogle;
   final bool showApple;
   final VoidCallback onGoogle;
   final VoidCallback onApple;
@@ -27,14 +30,15 @@ class SocialButtons extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        OutlinedButton.icon(
-          onPressed: busy ? null : onGoogle,
-          style: OutlinedButton.styleFrom(backgroundColor: p.surfaceTint),
-          icon: const _GoogleMark(),
-          label: const Text('Continue with Google'),
-        ),
+        if (showGoogle)
+          OutlinedButton.icon(
+            onPressed: busy ? null : onGoogle,
+            style: OutlinedButton.styleFrom(backgroundColor: p.surfaceTint),
+            icon: const _GoogleMark(),
+            label: const Text('Continue with Google'),
+          ),
         if (showApple) ...[
-          const SizedBox(height: Spacing.x3),
+          if (showGoogle) const SizedBox(height: Spacing.x3),
           FilledButton.icon(
             onPressed: busy ? null : onApple,
             style: FilledButton.styleFrom(

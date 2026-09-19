@@ -15,7 +15,6 @@ class BootData {
     this.token,
     this.user,
     this.orgs = const [],
-    this.serverUrl,
     this.appMode,
     this.selectedOrgSlug,
     this.appearance,
@@ -28,7 +27,6 @@ class BootData {
   final String? token;
   final User? user;
   final List<Org> orgs;
-  final String? serverUrl;
   final String? appMode;
   final String? selectedOrgSlug;
 
@@ -68,7 +66,6 @@ class BootData {
       token: token,
       user: user,
       orgs: orgs,
-      serverUrl: await secure.read(SecureStore.keyServerUrl),
       appMode: await prefs.getString(Prefs.keyAppMode),
       selectedOrgSlug: await prefs.getString(Prefs.keySelectedOrg),
       appearance: await prefs.getString(Prefs.keyAppearance),

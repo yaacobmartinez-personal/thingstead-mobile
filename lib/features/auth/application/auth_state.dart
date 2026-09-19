@@ -5,7 +5,7 @@ import '../domain/user.dart';
 
 part 'auth_state.freezed.dart';
 
-enum SignOutReason { user, sessionExpired, serverChanged, accountDeleted }
+enum SignOutReason { user, sessionExpired, accountDeleted }
 
 /// The app's session. There is no "booting" state: persisted data is read
 /// before the first frame (see BootData), so the initial state is known.

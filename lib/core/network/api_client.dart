@@ -8,7 +8,6 @@ import '../storage/boot_data.dart';
 import '../time/clock.dart';
 import 'api_error.dart';
 import 'cold_start_interceptor.dart';
-import 'server_url.dart';
 import 'token_codec.dart';
 import 'unauthorized_events.dart';
 
@@ -119,10 +118,9 @@ class ApiClient {
 
 @Riverpod(keepAlive: true)
 ApiClient apiClient(Ref ref) {
-  final serverUrl = ref.watch(serverUrlProvider);
   final dio = Dio(
     BaseOptions(
-      baseUrl: '$serverUrl/api',
+      baseUrl: '${AppConfig.defaultServerUrl}/api',
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 15),

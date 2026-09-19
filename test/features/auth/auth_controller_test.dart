@@ -177,16 +177,6 @@ void main() {
         const AuthState.signedOut(reason: SignOutReason.sessionExpired),
       );
     });
-
-    test('changing server ends the session', () async {
-      final (world, c) = await signedInWorld();
-      await c.read(authControllerProvider.notifier).changeServer('http://10.0.2.2:3000/');
-      expect(
-        c.read(authControllerProvider),
-        const AuthState.signedOut(reason: SignOutReason.serverChanged),
-      );
-      expect(world.secure.values[SecureStore.keyServerUrl], 'http://10.0.2.2:3000');
-    });
   });
 
   group('account', () {

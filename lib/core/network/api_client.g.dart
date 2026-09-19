@@ -48,7 +48,7 @@ final class ApiClientProvider
   }
 }
 
-String _$apiClientHash() => r'039b47fbb87aa6624ae946fbec373bb0db19ae1e';
+String _$apiClientHash() => r'd8e65428da4a04951f6d92835847c9b1b5d270f0';
 
 /// The bearer token to send, or null. Seeded from persisted boot data (when
 /// unexpired), then owned by the auth controller. Kept as its own tiny

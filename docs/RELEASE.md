@@ -55,8 +55,8 @@ not, suspect a missing keep rule first: `adb logcat | grep -i "ClassNotFound\|No
 - `allowBackup=false` + `dataExtractionRules` excluding everything: the
   session token is in encrypted storage whose key does not survive a
   restore, so a backup would only produce a half-broken app.
-- `devToolsProvider` hides the server-address controls in release
-  (long-press the version line to reveal).
+- The server address is a compile-time constant (`--dart-define=SERVER_URL`);
+  there is no runtime control for it.
 - Release is not `DEBUGGABLE`; check with
   `adb shell dumpsys package pro.thingstead.app | grep flags`.
 
@@ -94,3 +94,40 @@ Xcode → Organizer → Distribute.
   reviewer's first impression is a spinner.
 - Store listing copy and screenshots: capture from `API_MODE=fake`, which
   has a full demo org.
+
+## Social sign-in setup (once)
+
+The endpoints exist (`docs/API-CONTRACT.md` #6, #7). What is left is OAuth
+configuration, which needs the store accounts:
+
+**Google** — Google Cloud Console → APIs & Services → Credentials, in a
+project for Thingstead:
+
+1. *Web application* client: no redirect URIs needed. Its id is
+   `GOOGLE_WEB_CLIENT_ID` — set it on Render (the backend checks it as the
+   token audience) **and** bake it into the app:
+   `--dart-define=GOOGLE_WEB_CLIENT_ID=…`. Without the define the login
+   screen hides the Google button.
+2. *Android* client: package `pro.thingstead.app`, SHA-1 of the upload key
+   (above) and, after the first Play upload, of Play's app-signing key. A
+   missing SHA-1 fails silently as `DEVELOPER_ERROR`.
+3. *iOS* client: bundle `pro.thingstead.app`; its id is
+   `--dart-define=GOOGLE_IOS_CLIENT_ID=…` and its reversed form goes in
+   `ios/Runner/Info.plist` under `CFBundleURLSchemes`.
+
+**Apple** — needs the Developer Program:
+
+1. Certificates, IDs & Profiles → the `pro.thingstead.app` App ID → enable
+   *Sign in with Apple*. Xcode → Runner → Signing & Capabilities → **+ Sign
+   in with Apple**.
+2. Set `APPLE_TEAM_ID` on Render (also turns on the Universal Links file).
+   The backend defaults the audience to the bundle id.
+
+**App / Universal Links** — after the first Play upload, copy the app-signing
+key's SHA-256 from Play Console → Setup → App signing into
+`ANDROID_CERT_SHA256` on Render. Verify with:
+
+```bash
+adb shell pm verify-app-links --re-verify pro.thingstead.app
+adb shell pm get-app-links pro.thingstead.app     # want: verified
+```

@@ -27,7 +27,6 @@ class SecureStore {
   static const keyToken = 'thingstead.token';
   static const keyUser = 'thingstead.user';
   static const keyOrgs = 'thingstead.orgs';
-  static const keyServerUrl = 'thingstead.serverUrl';
   static const keyAppleFullName = 'thingstead.appleFullName';
 
   Future<String?> read(String key) async {

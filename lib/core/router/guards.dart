@@ -45,8 +45,7 @@ String? computeRedirect({
   if (!signedIn && requiresSession(path)) {
     final reason = auth is SignedOut ? auth.reason : null;
     final deliberate = reason == SignOutReason.user ||
-        reason == SignOutReason.accountDeleted ||
-        reason == SignOutReason.serverChanged;
+        reason == SignOutReason.accountDeleted;
     return deliberate ? AppMode.attendee.home : loginFor(uri);
   }
 

@@ -184,14 +184,12 @@ offstage until revealed, so widget tests use
 `tester.ensureVisible(find.x(skipOffstage: false))` rather than
 `scrollUntilVisible` (whose drags can start on a text field).
 
-## Developer tools
+## Server address
 
-The server address (login footer, Account, Settings) is a developer
-affordance ported from the Expo app for pointing at staging or a laptop.
-`devToolsProvider` (`lib/core/config/dev_tools.dart`) hides it in release
-builds; long-pressing the version line in Account or Settings reveals it
-for the session, so support can still reach it. Debug and profile builds
-show it by default.
+Fixed at build time: `AppConfig.defaultServerUrl` is `--dart-define=SERVER_URL`,
+defaulting to the production host. There is no runtime setting — the app
+only ever talks to one deployment, so nothing in the UI mentions it. A
+developer pointing at a laptop passes the define.
 
 ## Organizer onboarding
 
