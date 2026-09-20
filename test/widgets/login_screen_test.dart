@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thingstead/core/config/app_config.dart';
@@ -62,9 +60,9 @@ void main() {
     expect(c.read(authControllerProvider).user?.email, FakeAccounts.attendeeEmail);
   });
 
-  testWidgets('real mode hides Google without a client id, and Apple off iOS', (tester) async {
-    // The feature flag is on; what is missing is GOOGLE_WEB_CLIENT_ID (no
-    // dart-define under test) and an iOS host. Nothing social should show,
+  testWidgets('real mode hides both social buttons without their build-time setup', (tester) async {
+    // The feature flag is on; what is missing is GOOGLE_WEB_CLIENT_ID and
+    // APPLE_SIGN_IN (no dart-defines under test). Nothing social should show,
     // divider included, rather than a button that fails.
     await pumpApp(
       tester,
@@ -76,5 +74,5 @@ void main() {
     expect(find.text('Continue with Apple'), findsNothing);
     expect(find.text('or'), findsNothing);
     expect(find.widgetWithText(PillButton, 'Sign in'), findsOneWidget);
-  }, skip: Platform.isIOS);
+  });
 }

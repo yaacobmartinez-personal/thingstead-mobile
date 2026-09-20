@@ -31,10 +31,16 @@ install the iOS platform when it asks (Settings → Platforms).
 
 ## 2. One-time: Apple account in Xcode
 
-Xcode → Settings → Accounts → **+** → sign in with the Apple ID that owns the
-Apple Developer Program membership (needed for TestFlight and for Universal
-Links / Sign in with Apple capabilities; a free account can still run on a
-plugged-in iPhone for 7 days at a time).
+Xcode → Settings → Accounts → **+** → sign in with your Apple ID. This
+creates a **Personal Team**, which is enough for everything in this guide
+except §7: the simulator without limits, and your own iPhone over USB with
+builds that expire after 7 days (just run again).
+
+**Use the Apple ID that will later hold the Developer Program membership.**
+Building `pro.thingstead.app` under a Personal Team ties that bundle id to
+the Apple ID; joining the Program with the same ID upgrades cleanly. If the
+paid account will be a different one, set the bundle id to
+`pro.thingstead.app.dev` in Xcode for the free phase and do not commit it.
 
 ## 3. Clone and open
 
@@ -51,24 +57,31 @@ Then open the **workspace** — never the project — or the pods will not resol
 open ios/Runner.xcworkspace
 ```
 
-## 4. One-time: signing and capabilities in Xcode
+## 4. One-time: signing in Xcode
 
 Select **Runner** (project) → **Runner** (target) → **Signing & Capabilities**:
 
-1. **Automatically manage signing** ✓, **Team** = your team. Xcode creates the
-   App ID `pro.thingstead.app` and a development profile.
-2. Attach the entitlements file that is already in the repo:
-   Build Settings → search "Code Signing Entitlements" → set to
-   `Runner/Runner.entitlements` for all configurations. This turns on
-   **Associated Domains** (`applinks:thingstead.pro`, `www.`, `app.`) for
-   Universal Links. Until the backend hosts
-   `/.well-known/apple-app-site-association` (docs/API-CONTRACT.md §3) links
-   open through the `thingstead://` scheme instead — that already works.
-3. Optional, not needed yet: **+ Capability → Sign in with Apple**. The
-   feature is behind `Feature.socialSignIn`, which stays off until the
-   backend ships #6/#7.
+- **Automatically manage signing** ✓, **Team** = your team. Xcode creates the
+  App ID `pro.thingstead.app` and a development profile.
+- Do the same for the `RunnerTests` target if Xcode nags about it.
 
-Do the same for the `RunnerTests` target's Team if Xcode nags about it.
+**With a Personal Team, stop here.** The two capabilities below are paid-only
+and Xcode refuses to build if they are present:
+
+- Do **not** attach `Runner/Runner.entitlements` (Associated Domains).
+  `thingstead://…` links still open the app; `https://thingstead.pro/…`
+  opens Safari until the membership exists.
+- Do **not** add Sign in with Apple. The app hides the Apple button unless
+  built with `--dart-define=APPLE_SIGN_IN=true`, so nothing dead shows.
+
+**With a Developer Program team**, also:
+
+1. Build Settings → "Code Signing Entitlements" → `Runner/Runner.entitlements`
+   for all configurations. Turns on **Associated Domains** for Universal
+   Links; the backend serves `/.well-known/apple-app-site-association` once
+   `APPLE_TEAM_ID` is set on Render (docs/RELEASE.md).
+2. **+ Capability → Sign in with Apple**, then build with
+   `--dart-define=APPLE_SIGN_IN=true`.
 
 ## 5. Run
 
@@ -79,21 +92,25 @@ open -a Simulator
 flutter run --dart-define=API_MODE=fake
 ```
 
-Real iPhone (camera works — the actual scanner):
+Real iPhone (camera works — the actual scanner, and the offline check-in
+path is worth testing here):
 
 ```bash
 flutter devices                              # find the phone's id
-flutter run -d <device-id> --dart-define=API_MODE=fake
+flutter run -d <device-id> --dart-define=API_MODE=real
 ```
 
 First run on a phone: unlock it, tap Trust, and on iOS 16+ turn on
-Settings → Privacy & Security → **Developer Mode**. If iOS says the
-developer is untrusted: Settings → General → VPN & Device Management → trust
-your team.
+Settings → Privacy & Security → **Developer Mode** (the phone reboots). If
+iOS says the developer is untrusted: Settings → General → VPN & Device
+Management → trust your Apple ID. Personal Team builds stop launching after
+7 days; `flutter run` again re-signs.
 
 `--dart-define=API_MODE=real` points at `https://thingstead.onrender.com`,
-which serves the whole mobile API except Google/Apple sign-in. Fake mode
-stays useful for demos and for working without an account.
+which serves the whole mobile API. Sign in with your thingstead.pro account.
+Fake mode stays useful for demos and for working without an account, and
+is the only way to try the Google/Apple buttons before their OAuth setup
+exists (docs/RELEASE.md).
 
 ## 6. Per session
 
@@ -108,21 +125,22 @@ Codegen output (`*.g.dart`, `*.freezed.dart`) is committed, so
 `build_runner` is not needed just to run. If you edit a `@riverpod` /
 `@freezed` file on the Mac: `dart run build_runner build -d`.
 
-## 7. Release build and TestFlight (Phase 6)
+## 7. Release build and TestFlight — needs the Developer Program
 
 ```bash
-flutter build ipa --dart-define=API_MODE=real
+flutter build ipa --dart-define=API_MODE=real \
+  --dart-define=APPLE_SIGN_IN=true \
+  --dart-define=GOOGLE_WEB_CLIENT_ID=… --dart-define=GOOGLE_IOS_CLIENT_ID=…
 ```
 
 This produces `build/ios/ipa/thingstead.ipa` and an `.xcarchive`. Upload with
-Xcode → Window → Organizer → Distribute App, or `xcrun altool` /
-Transporter. Before the first upload:
+Xcode → Window → Organizer → Distribute App, or Transporter. Before the
+first upload:
 
 - App Store Connect → create the app with bundle id `pro.thingstead.app`.
-- `ITSAppUsesNonExemptEncryption = NO` in `ios/Runner/Info.plist` (HTTPS
-  only), or answer the export-compliance question on every upload.
-- Icon and splash: `dart run flutter_launcher_icons` and
-  `dart run flutter_native_splash:create` (Phase 6, assets in `assets/brand/`).
+- The two capabilities from §4 attached.
+- Icon, splash and `ITSAppUsesNonExemptEncryption` are already done.
+- Store copy and screenshots: docs/STORE-LISTING.md.
 
 ## Remote
 
@@ -137,7 +155,9 @@ Mac; SSH works if the Mac's key is on the account.
 |---|---|
 | `CocoaPods not installed` / `pod: command not found` | `brew install cocoapods`, restart the terminal |
 | Pod install fails on deployment target | `ios/Podfile`: uncomment `platform :ios, '15.0'` |
-| "Signing for Runner requires a development team" | Step 4.1 |
+| "Signing for Runner requires a development team" | §4 |
+| Build fails mentioning "Associated Domains" or "Sign in with Apple" on a Personal Team | Remove the entitlements / capability — §4 |
+| The app stops launching after a week | Personal Team build expired; `flutter run` again |
 | App installs but the camera is black on the simulator | Expected; use manual entry or a real phone |
 | Universal Link opens Safari instead of the app | The AASA file is not hosted yet (backend follow-up); `thingstead://…` links work |
 | Build error mentioning `Flutter.h` not found | You opened `Runner.xcodeproj`; open `Runner.xcworkspace` |

@@ -87,13 +87,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final apiMode = ref.watch(apiModeProvider);
     final waking = ref.watch(serverWakingProvider);
-    // The Google button also needs a client id baked in (GOOGLE_WEB_CLIENT_ID);
-    // Apple needs nothing beyond iOS. Fake mode shows both for the demo.
+    // Each button also needs its build-time setup: Google a client id
+    // (GOOGLE_WEB_CLIENT_ID), Apple the capability opt-in (APPLE_SIGN_IN) and
+    // iOS. Fake mode shows both for the demo.
     final socialFeature = isAvailable(Feature.socialSignIn, apiMode);
     final showGoogle = socialFeature && (apiMode == ApiMode.fake || AppConfig.googleWebClientId.isNotEmpty);
     final canSignUp = isAvailable(Feature.signup, apiMode);
     final canReset = isAvailable(Feature.passwordReset, apiMode);
-    final showApple = socialFeature && (Platform.isIOS || apiMode == ApiMode.fake);
+    final showApple = socialFeature &&
+        (apiMode == ApiMode.fake || (Platform.isIOS && AppConfig.appleSignInEnabled));
     final social = showGoogle || showApple;
 
     return AuthScaffold(
