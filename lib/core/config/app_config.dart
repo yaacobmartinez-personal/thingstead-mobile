@@ -59,6 +59,12 @@ abstract final class AppConfig {
   static const String googleIosClientId =
       String.fromEnvironment('GOOGLE_IOS_CLIENT_ID');
 
+  /// Sign in with Apple needs the capability on the App ID, which only a paid
+  /// Developer Program team can add. A build without it must not show the
+  /// button, so it is opt-in: `--dart-define=APPLE_SIGN_IN=true`.
+  static const bool appleSignInEnabled =
+      bool.fromEnvironment('APPLE_SIGN_IN');
+
   /// Reported in the X-Client header. Keep in step with pubspec.yaml.
   static const String appVersion = '0.1.0';
 }

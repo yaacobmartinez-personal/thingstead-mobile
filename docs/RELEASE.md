@@ -120,7 +120,10 @@ project for Thingstead:
 1. Certificates, IDs & Profiles → the `pro.thingstead.app` App ID → enable
    *Sign in with Apple*. Xcode → Runner → Signing & Capabilities → **+ Sign
    in with Apple**.
-2. Set `APPLE_TEAM_ID` on Render (also turns on the Universal Links file).
+2. Build with `--dart-define=APPLE_SIGN_IN=true`. Without it the app hides
+   the Apple button, so a build from a Personal Team (which cannot add the
+   capability) never shows one that fails.
+3. Set `APPLE_TEAM_ID` on Render (also turns on the Universal Links file).
    The backend defaults the audience to the bundle id.
 
 **App / Universal Links** — after the first Play upload, copy the app-signing
