@@ -39,6 +39,7 @@ flutter test
 - [docs/MAC-SETUP.md](docs/MAC-SETUP.md) — building and running the iOS app on a Mac
 - [docs/RELEASE.md](docs/RELEASE.md) — signing, release builds, icon/splash regeneration
 - [docs/STORE-LISTING.md](docs/STORE-LISTING.md) — store copy, data-safety answers, screenshots in `store/`
+- [docs/ROADMAP.md](docs/ROADMAP.md) — what is parked for v1.1 and why
 - [docs/API-CONTRACT.md](docs/API-CONTRACT.md) — backend contract
 
 ## Toolchain
