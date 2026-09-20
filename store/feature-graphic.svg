@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+<rect width="1024" height="500" fill="#E8F0D9"/>
+<circle cx="200" cy="250" r="150" fill="#C8DC96"/>
+<g transform="translate(200 250) scale(0.32) translate(-512 -512)">
+<!-- hexagon of six nodes with a T, centred in a 1024 box; scaled by S around the centre -->
+
+  <g fill="none" stroke="#2F4A2A" stroke-width="34" stroke-linejoin="round">
+    <polygon points="512,312 685,412 685,612 512,712 339,612 339,412"/>
+  </g>
+  <g fill="#2F4A2A">
+    <circle cx="512" cy="312" r="44"/><circle cx="685" cy="412" r="44"/><circle cx="685" cy="612" r="44"/>
+    <circle cx="512" cy="712" r="44"/><circle cx="339" cy="612" r="44"/><circle cx="339" cy="412" r="44"/>
+  </g>
+  <g fill="#171C14">
+    <rect x="418" y="420" width="188" height="48" rx="12"/>
+    <rect x="487" y="420" width="50" height="184" rx="12"/>
+    <rect x="442" y="574" width="140" height="48" rx="12"/>
+  </g>
+</g>
+<text x="400" y="228" font-family="Manrope, Arial, sans-serif" font-weight="800" font-size="64" fill="#171C14">Thingstead</text>
+<text x="402" y="290" font-family="Manrope, Arial, sans-serif" font-weight="500" font-size="30" fill="#6B7565">Events, tickets, and the door.</text>
+</svg>
