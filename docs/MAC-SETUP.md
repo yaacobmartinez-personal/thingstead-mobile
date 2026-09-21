@@ -49,7 +49,7 @@ git clone https://github.com/yaacobmartinez-personal/thingstead-mobile.git ~/dev
 cd ~/dev/thingstead
 flutter pub get
 open -a Simulator
-flutter run --dart-define=API_MODE=fake
+flutter run --dart-define-from-file=release.json   # real backend; sign in with your account
 ```
 
 The first run creates `ios/Podfile` and `Runner.xcworkspace` and runs
@@ -95,8 +95,14 @@ Simulator (no camera, but the manual-entry sheet covers the scanner):
 
 ```bash
 open -a Simulator
-flutter run --dart-define=API_MODE=fake
+flutter run --dart-define-from-file=release.json   # real backend
+flutter run --dart-define=API_MODE=fake           # demo data, no account needed
 ```
+
+Real mode is the one to test; fake mode has two demo organizations with
+events and attendees in every state (waitlist, checked in, erased, pending
+invites), which a fresh real account does not, and shows the Apple/Google
+buttons before their OAuth setup exists.
 
 Real iPhone (camera works — the actual scanner, and the offline check-in
 path is worth testing here):
@@ -123,7 +129,7 @@ exists (docs/RELEASE.md).
 ```bash
 git pull
 flutter pub get
-flutter run --dart-define=API_MODE=fake   # re-runs pod install when plugins changed
+flutter run --dart-define-from-file=release.json   # re-runs pod install when plugins changed
 ```
 
 Codegen output (`*.g.dart`, `*.freezed.dart`) is committed, so
