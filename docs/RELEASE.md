@@ -115,6 +115,14 @@ project for Thingstead:
    `--dart-define=GOOGLE_IOS_CLIENT_ID=…` and its reversed form goes in
    `ios/Runner/Info.plist` under `CFBundleURLSchemes`.
 
+Configured so far (client ids are not secret):
+
+| Client | ID | Wired where |
+|---|---|---|
+| Android | `112308481791-5q5mgiehiqt4r1e7o016bt7hmpif4kk5.apps.googleusercontent.com` | Nowhere — Google matches it by package + SHA-1. Add Play's app-signing SHA-1 to it after the first upload. |
+| Web | _pending_ | `GOOGLE_WEB_CLIENT_ID` on Render **and** `--dart-define` in the build |
+| iOS | _pending_ | `--dart-define=GOOGLE_IOS_CLIENT_ID` + reversed id in Info.plist |
+
 **Apple** — needs the Developer Program:
 
 1. Certificates, IDs & Profiles → the `pro.thingstead.app` App ID → enable
