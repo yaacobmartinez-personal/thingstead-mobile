@@ -35,9 +35,13 @@ client both need that one added alongside the upload key's.
 ### Build
 
 ```bash
-flutter build appbundle --dart-define=API_MODE=real
+flutter build appbundle --dart-define-from-file=release.json
 # → build/app/outputs/bundle/release/app-release.aab
 ```
+
+`release.json` holds every build-time define for a store build (API mode,
+OAuth client ids, the Apple opt-in). Client ids are public, so it is
+committed; fill in the iOS id and flip `APPLE_SIGN_IN` when those exist.
 
 The bundle is ~70 MB because it carries the proguard map and debug symbols
 for three ABIs; Play strips those and serves ~25 MB per device. `flutter
@@ -104,10 +108,10 @@ configuration, which needs the store accounts:
 project for Thingstead:
 
 1. *Web application* client: no redirect URIs needed. Its id is
-   `GOOGLE_WEB_CLIENT_ID` — set it on Render (the backend checks it as the
-   token audience) **and** bake it into the app:
-   `--dart-define=GOOGLE_WEB_CLIENT_ID=…`. Without the define the login
-   screen hides the Google button.
+   `GOOGLE_WEB_CLIENT_ID` — in `render.yaml` (the backend checks it as the
+   token audience) **and** in `release.json`. Without the define the login
+   screen hides the Google button. The downloaded JSON also carries a client
+   *secret*; nothing uses it — do not commit that file.
 2. *Android* client: package `pro.thingstead.app`, SHA-1 of the upload key
    (above) and, after the first Play upload, of Play's app-signing key. A
    missing SHA-1 fails silently as `DEVELOPER_ERROR`.
@@ -120,7 +124,7 @@ Configured so far (client ids are not secret):
 | Client | ID | Wired where |
 |---|---|---|
 | Android | `112308481791-5q5mgiehiqt4r1e7o016bt7hmpif4kk5.apps.googleusercontent.com` | Nowhere — Google matches it by package + SHA-1. Add Play's app-signing SHA-1 to it after the first upload. |
-| Web | _pending_ | `GOOGLE_WEB_CLIENT_ID` on Render **and** `--dart-define` in the build |
+| Web | `112308481791-2nj8fsso4gf8o20qrs8kk4hogj8c2oj5.apps.googleusercontent.com` | `render.yaml` (deployed) and `release.json` |
 | iOS | _pending_ | `--dart-define=GOOGLE_IOS_CLIENT_ID` + reversed id in Info.plist |
 
 **Apple** — needs the Developer Program:

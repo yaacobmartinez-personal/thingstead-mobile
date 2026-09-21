@@ -128,9 +128,7 @@ Codegen output (`*.g.dart`, `*.freezed.dart`) is committed, so
 ## 7. Release build and TestFlight — needs the Developer Program
 
 ```bash
-flutter build ipa --dart-define=API_MODE=real \
-  --dart-define=APPLE_SIGN_IN=true \
-  --dart-define=GOOGLE_WEB_CLIENT_ID=… --dart-define=GOOGLE_IOS_CLIENT_ID=…
+flutter build ipa --dart-define-from-file=release.json   # fill in the iOS id and APPLE_SIGN_IN first
 ```
 
 This produces `build/ios/ipa/thingstead.ipa` and an `.xcarchive`. Upload with
