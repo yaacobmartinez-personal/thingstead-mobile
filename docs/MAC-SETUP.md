@@ -47,11 +47,17 @@ paid account will be a different one, set the bundle id to
 ```bash
 git clone https://github.com/yaacobmartinez-personal/thingstead-mobile.git ~/dev/thingstead
 cd ~/dev/thingstead
-flutter pub get                            # also generates ios/Podfile the first time
-cd ios && pod install && cd ..
+flutter pub get
+open -a Simulator
+flutter run --dart-define=API_MODE=fake
 ```
 
-Then open the **workspace** — never the project — or the pods will not resolve:
+The first run creates `ios/Podfile` and `Runner.xcworkspace` and runs
+`pod install` itself — there is nothing to do by hand. If it stops on
+"requires a development team", do §4 and run again.
+
+For anything in Xcode, open the **workspace** — never the project — or the
+pods will not resolve:
 
 ```bash
 open ios/Runner.xcworkspace
@@ -117,8 +123,7 @@ exists (docs/RELEASE.md).
 ```bash
 git pull
 flutter pub get
-cd ios && pod install && cd ..     # only when pubspec.lock changed
-flutter run --dart-define=API_MODE=fake
+flutter run --dart-define=API_MODE=fake   # re-runs pod install when plugins changed
 ```
 
 Codegen output (`*.g.dart`, `*.freezed.dart`) is committed, so
