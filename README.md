@@ -1,5 +1,11 @@
 # Thingstead (mobile)
 
+> **Status:** built and verified against production on Android; **pending
+> release on the Play Store and App Store** (waiting on the developer
+> accounts). iOS builds from the same code — see `docs/MAC-SETUP.md`.
+> What remains is in `docs/RELEASE.md`; what comes after is in
+> `docs/ROADMAP.md`.
+
 Flutter app for [Thingstead](https://thingstead.pro), the free-event
 registration SaaS. One app, two modes: attendees find events and keep QR
 tickets; organizers manage events and check people in at the door.
