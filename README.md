@@ -61,3 +61,9 @@ New-Item -ItemType Directory -Force C:\dev\tmp | Out-Null
 ```
 
 Open a new terminal afterwards.
+
+## Contributing
+
+Branches are named by kind: `feat/…` for features, `bug/…` for fixes,
+`chore/…` for docs, CI, config and releases. Open a PR against `main`; CI
+runs `flutter analyze` and `flutter test`. Delete the branch once merged.
